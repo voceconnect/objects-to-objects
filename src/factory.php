@@ -71,8 +71,13 @@ abstract class aO2O_Connection implements iO2O_Connection {
 
 	public function __construct( $name, $from_object_types, $to_object_types, $args = array( ) ) {
 		$this->name = $name;
-		$this->from_object_types = $from_object_types;
-		$this->to_object_types = $to_object_types;
+		$this->from_object_types = (array) $from_object_types;
+		$this->to_object_types = (array) $to_object_types;
+		
+		$args = wp_parse_args($args, array(
+			'sortable' => false
+		));
+		
 		$this->args = $args;
 	}
 

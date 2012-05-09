@@ -12,6 +12,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 		register_taxonomy( $this->taxonomy, $from_object_types, array(
 			'rewrite' => false,
 			'public' => false,
+			'sort' => $this->args['sortable'],
 		) );
 	}
 
@@ -21,13 +22,26 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 	 * @param array $connected_to_ids
 	 * @param bool $append whether to append to the current connected is or overwrite
 	 */
-	public function set_connected_to( $object_id, $connected_to_ids = array( ), $append = false ) {
-		if ( !in_array( get_post_type( $object_id ), $this->from_object_types ) ) {
+	public function set_connected_to( $from_object_id, $connected_to_ids = array( ), $append = false ) {
+		global $wpdb;
+
+		if ( !in_array( get_post_type( $from_object_id ), $this->from_object_types ) ) {
 			return new WP_Error( 'invalid_post_type', 'The given post type is not valid for this connection type.' );
 		}
 
-		$term_ids = array_map( array( __CLASS__, 'GetObjectTermID', $connected_to_ids ) );
-		wp_set_object_terms( $object_id, $term_ids, $this->taxonomy, $append );
+		$term_ids = array_map( array( __CLASS__, 'GetObjectTermID' ), $connected_to_ids );
+
+		//because wp_set_object_terms will only work if the term exists for the given taxonomy, we need to verify that each term exists
+		foreach ( $term_ids as $term_id ) {
+			if ( !term_exists( $term_id, $this->taxonomy ) ) {
+				//no core way to insert a term into a taxonomy by ID, so we need to get the slug
+				$term_slug = $wpdb->get_var( $wpdb->prepare( "SELECT slug from $wpdb->terms where term_id = %d", $term_id ) );
+
+				wp_insert_term( $term_slug, $this->taxonomy );
+			}
+		}
+
+		wp_set_object_terms( $from_object_id, $term_ids, $this->taxonomy, $append );
 	}
 
 	/**
@@ -35,15 +49,14 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 	 * @param int $object_id ID of the object from which connections are set
 	 * @return array|WP_Error 
 	 */
-	public function get_connected_to_objects( $object_id ) {
-		if ( !in_array( get_post_type( $object_id ), $this->from_object_types ) ) {
+	public function get_connected_to_objects( $from_object_id ) {
+		if ( !in_array( get_post_type( $from_object_id ), $this->from_object_types ) ) {
 			return new WP_Error( 'invalid_post_type', 'The given post type is not valid for this connection type.' );
 		}
 
-		if ( !in_array( $needle, $haystack ) )
-			$term_ids = $this->get_connected_terms( $object_id );
-		$object_ids = array_map( array( __CLASS__, 'GetObjectForTerm' ), $term_ids );
-		return $object_ids;
+		$term_ids = $this->get_connected_terms( $from_object_id );
+		$to_object_ids = array_map( array( __CLASS__, 'GetObjectForTerm' ), $term_ids );
+		return $to_object_ids;
 	}
 
 	/**
@@ -54,12 +67,12 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 	 * 
 	 * @todo add caching?
 	 */
-	public function get_connected_from_objects( $object_id ) {
-		if ( !in_array( get_post_type( $object_id ), $this->to_object_types ) ) {
+	public function get_connected_from_objects( $to_object_id ) {
+		if ( !in_array( get_post_type( $to_object_id ), $this->to_object_types ) ) {
 			return new WP_Error( 'invalid_post_type', 'The given post type is not valid for this connection type.' );
 		}
 
-		$term_id = self::GetObjectTermID( $object_id );
+		$term_id = self::GetObjectTermID( $to_object_id );
 
 		$connected_from_objects = get_objects_in_term( $term_id, $this->taxonomy );
 
@@ -67,31 +80,32 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 	}
 
 	private function get_connected_terms( $object_id ) {
-		$terms = get_object_term_cache( $object_id, $taxonomy );
+		$terms = get_object_term_cache( $object_id, $this->taxonomy );
 
 		$terms = wp_cache_get( $this->taxonomy . '_relationships_ordered' );
 
 		if ( false === $terms ) {
-			$terms = wp_get_object_terms( $id, $taxonomy, array( 'orderby' => 'term_order', 'fields' => 'ids' ) );
+			$terms = wp_get_object_terms( $object_id, $this->taxonomy, array( 'orderby' => 'term_order', 'fields' => 'ids' ) );
 			wp_cache_add( $object_id, $terms, $this->taxonomy . '_relationships_ordered' );
 		}
 
 		if ( empty( $terms ) )
-			return false;
+			return array( );
 
 		return $terms;
 	}
 
 	private static function GetObjectTermID( $object_id, $create = true ) {
-		if ( !( $term_id = get_post_meta( $object_id, 'o2o_term_id', true ) ) && $create ) {
+		if ( !( $term_id = intval( get_post_meta( $object_id, 'o2o_term_id', true ) ) ) && $create ) {
 			$term_id = self::CreateTermForObject( $object_id );
 		}
 		return $term_id;
 	}
 
 	private static function CreateTermForObject( $object_id ) {
-		$name = $slug = 'o2o-post-' . $object_id;
+		global $wpdb;
 
+		$name = $slug = 'o2o-post-' . $object_id;
 		if ( $term_id = term_exists( $slug ) ) {
 
 			$existing_object_id = self::GetObjectForTerm( $term_id );
@@ -126,7 +140,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 		$cache_key = 'o2o_object_' . $term_id;
 
 		if ( !($object_id = wp_cache_get( $cache_key )) ) {
-			$posts = get_posts( array( 'meta_query' => array( array( 'key' => 'o2o_term_id', 'value' => $term_id ) ) ) );
+			$posts = get_posts( array( 'meta_query' => array( array( 'key' => 'o2o_term_id', 'value' => $term_id ) ), 'post_type' => get_post_types(), 'post_status' => 'any' ) );
 			if ( count( $posts ) === 1 ) {
 				$object_id = $posts[0]->ID;
 				wp_cache_set( $cache_key, $object_id );
