@@ -26,7 +26,7 @@ class O2O_Admin {
 		$connection = O2O_Connection_Factory::Get_Connection( $connection_name );
 		
 		$selected = $connection->get_connected_to_objects($post->ID);
-		
+
 		$args = array(
 			'post_type' => $connection->to(),
 			'selected' => $selected,
@@ -45,7 +45,7 @@ class O2O_Admin {
 		
 		foreach ( O2O_Connection_Factory::Get_Connections() as $connection ) {
 			if ( in_array( $post_type, $connection->from() ) && isset($_POST[ $connection->name . '_nonce']) && wp_verify_nonce( $_POST[ $connection->name . '_nonce'], 'set_' . $connection->name . '_' . $post_id ) ) {
-				$from_ids = empty( $_POST[$connection->name] ) ? array( ) : array_map( 'intval', ( array ) $_POST[$connection->name] );
+				$from_ids = empty( $_POST[$connection->name] ) ? array( ) : array_map( 'intval', explode(',', $_POST[$connection->name] ));
 				$connection->set_connected_to( $post_id, $from_ids );
 			}
 		}
