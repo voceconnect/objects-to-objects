@@ -29,7 +29,7 @@ class O2O_Rewrites {
 	public static function add_rewrite_rules() {
 		foreach ( O2O_Connection_Factory::Get_Connections() as $connection ) {
 			$args = $connection->get_args();
-			if ( isset( $args['rewrite'] ) ) {
+			if ( !empty( $args['rewrite'] ) ) {
 
 				$base_direction = $args['rewrite'] == 'to' ? 'to' : 'from';
 				$attached_direction = $base_direction == 'to' ? 'from' : 'to';

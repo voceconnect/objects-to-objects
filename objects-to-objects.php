@@ -13,8 +13,9 @@ class O2O {
 	}
 
 	public static function init() {
+		
 		O2O_Query::init();
-
+		
 		if ( self::$rewrites_enabled ) {
 			O2O_Rewrites::Init();
 		}

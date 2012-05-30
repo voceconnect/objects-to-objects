@@ -14,14 +14,13 @@ class O2O_Admin {
 	public static function __action_add_meta_box( $post_type, $post ) {
 		foreach ( O2O_Connection_Factory::Get_Connections() as $connection ) {
 			if ( in_array( $post_type, $connection->from() ) ) {
-				add_meta_box( $connection->name, $connection->args['title']['from'], array( __CLASS__, 'meta_box' ), $post_type, 'side', 'low', $connection->name );
+				$connection_args = $connection->get_args();
+				add_meta_box( $connection->get_name(), isset($connection_args['to']['labels']['name']) ? $connection_args['to']['labels']['name'] : 'Items', array( __CLASS__, 'meta_box' ), $post_type, 'side', 'low', $connection->get_name() );
 			}
 		}
 	}
 
 	public static function meta_box( $post, $metabox ) {
-
-
 		$connection_name = $metabox['args'];
 		$connection = O2O_Connection_Factory::Get_Connection( $connection_name );
 		
@@ -30,10 +29,11 @@ class O2O_Admin {
 		$args = array(
 			'post_type' => $connection->to(),
 			'selected' => $selected,
+			'sortable' => $connection->is_sortable('to')
 		);
 
 		echo post_selection_ui( $connection_name, $args );
-		wp_nonce_field('set_' . $connection->name . '_' . $post->ID, $connection->name . '_nonce');
+		wp_nonce_field('set_' . $connection->get_name() . '_' . $post->ID, $connection->get_name() . '_nonce');
 		
 	}
 

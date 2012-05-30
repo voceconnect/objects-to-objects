@@ -7,12 +7,23 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 	public function __construct( $name, $from_object_types, $to_object_types, $args = array( ) ) {
 		parent::__construct( $name, $from_object_types, $to_object_types, $args );
 
+		$this->args['from']['sortable'] = false;
+		
+		
+		if( ( $this->args['to']['limit'] <= -1 || $this->args['to']['limit'] > 50 ) && $this->is_sortable( 'to') ) {
+			//force a limit if the 'to' direction is sortable since we'll have to pull in all 
+			//results and reorder to implement paging for user sorts
+			$this->args['to']['limit'] = 50;
+		}
+		
+		$this->args['to']['limit'] = 
+		
 		$this->taxonomy = 'o2o_' . $name;
 
 		register_taxonomy( $this->taxonomy, $from_object_types, array(
 			'rewrite' => false,
 			'public' => false,
-			'sort' => $this->args['sortable'],
+			'sort' => $this->is_sortable('to'),
 		) );
 	}
 
@@ -78,7 +89,12 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 
 		return $connected_from_objects;
 	}
-
+	
+	/**
+	 * Returns the term_ids for the connected terms to an object
+	 * @param intt $object_id
+	 * @return array
+	 */
 	private function get_connected_terms( $object_id ) {
 		$terms = get_object_term_cache( $object_id, $this->taxonomy );
 
@@ -94,7 +110,14 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 
 		return $terms;
 	}
-
+	
+	/**
+	 * Returns the term_id for the given object_id.  A term is shared across all taxonomies
+	 * for a single object.
+	 * @param int $object_id
+	 * @param bool $create Whether to create the term if it doesn't exist
+	 * @return int 
+	 */
 	private static function GetObjectTermID( $object_id, $create = true ) {
 		if ( !( $term_id = intval( get_post_meta( $object_id, 'o2o_term_id', true ) ) ) && $create ) {
 			$term_id = self::CreateTermForObject( $object_id );
@@ -102,6 +125,13 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 		return $term_id;
 	}
 
+	/**
+	 * Creates the representing term for the object.  A direct insert is used since WP Core
+	 * doesn't support inserting terms except for a specific taxonomy.
+	 * @global DB $wpdb
+	 * @param int $object_id
+	 * @return int|WP_Error 
+	 */
 	private static function CreateTermForObject( $object_id ) {
 		global $wpdb;
 
