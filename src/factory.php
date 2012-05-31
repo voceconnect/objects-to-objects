@@ -127,7 +127,6 @@ abstract class aO2O_Connection implements iO2O_Connection {
 		$args['to'] = wp_parse_args($args['to'], $defaults['to']);
 		$args['from'] = wp_parse_args($args['from'], $defaults['from']);
 
-		
 		$this->args = $args;
 	}
 

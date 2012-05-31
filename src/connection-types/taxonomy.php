@@ -16,8 +16,6 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 			$this->args['to']['limit'] = 50;
 		}
 		
-		$this->args['to']['limit'] = 
-		
 		$this->taxonomy = 'o2o_' . $name;
 
 		register_taxonomy( $this->taxonomy, $from_object_types, array(

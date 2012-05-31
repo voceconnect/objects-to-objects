@@ -44,8 +44,8 @@ class O2O_Admin {
 		$post_type = get_post_type($post_id);
 		
 		foreach ( O2O_Connection_Factory::Get_Connections() as $connection ) {
-			if ( in_array( $post_type, $connection->from() ) && isset($_POST[ $connection->name . '_nonce']) && wp_verify_nonce( $_POST[ $connection->name . '_nonce'], 'set_' . $connection->name . '_' . $post_id ) ) {
-				$from_ids = empty( $_POST[$connection->name] ) ? array( ) : array_map( 'intval', explode(',', $_POST[$connection->name] ));
+			if ( in_array( $post_type, $connection->from() ) && isset($_POST[ $connection->get_name() . '_nonce']) && wp_verify_nonce( $_POST[ $connection->get_name() . '_nonce'], 'set_' . $connection->get_name() . '_' . $post_id ) ) {
+				$from_ids = empty( $_POST[$connection->get_name()] ) ? array( ) : array_map( 'intval', explode(',', $_POST[$connection->get_name()] ));
 				$connection->set_connected_to( $post_id, $from_ids );
 			}
 		}
