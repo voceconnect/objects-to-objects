@@ -142,7 +142,7 @@ class O2O_Query {
 		if ( isset( $wp_query->query_vars['o2o_query'] ) && is_array( $wp_query->query_vars['o2o_query'] ) && isset( $wp_query->query_vars['o2o_query']['connection'] ) ) {
 			$o2o_query = $wp_query->query_vars['o2o_query'];
 			if ( $connection = O2O_Connection_Factory::Get_Connection( $o2o_query['connection'] ) ) {
-				$wp_query->o2o_connection = O2O_Connection_Factory::Get_Connection($wp_query->o2o_connection);
+				$wp_query->o2o_connection = $o2o_query['connection'];
 
 				$o2o_query = wp_parse_args( $o2o_query, array(
 					'direction' => 'to',
