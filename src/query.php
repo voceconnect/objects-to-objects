@@ -53,10 +53,9 @@ class O2O_Query {
 	 * @return array 
 	 */
 	public static function _filter_posts_results( $posts, $wp_query ) {
-
 		if ( is_o2o_connection( $wp_query ) ) {
 
-			$connection = $wp_query->o2o_connection;
+			$connection = O2O_Connection_Factory::Get_Connection($wp_query->o2o_connection);
 
 			//handling for connection based ordering
 			if ( isset( $wp_query->query_vars['o2o_orderby'] ) && $wp_query->query_vars['o2o_orderby'] == $connection->get_name() ) {
@@ -116,7 +115,7 @@ class O2O_Query {
 	 */
 	public static function _filter_posts_clauses( $clauses, $wp_query ) {
 		if ( is_o2o_connection( $wp_query ) ) {
-			$connection = $wp_query->o2o_connection;
+			$connection = O2O_Connection_Factory::Get_Connection($wp_query->o2o_connection);
 			$o2o_query = $wp_query->query_vars['o2o_query'];
 
 			//if we're doing custom order we need to expand the limits to include the complete set since limits can be done until after sorting
@@ -143,7 +142,7 @@ class O2O_Query {
 		if ( isset( $wp_query->query_vars['o2o_query'] ) && is_array( $wp_query->query_vars['o2o_query'] ) && isset( $wp_query->query_vars['o2o_query']['connection'] ) ) {
 			$o2o_query = $wp_query->query_vars['o2o_query'];
 			if ( $connection = O2O_Connection_Factory::Get_Connection( $o2o_query['connection'] ) ) {
-				$wp_query->o2o_connection = $connection;
+				$wp_query->o2o_connection = O2O_Connection_Factory::Get_Connection($wp_query->o2o_connection);
 
 				$o2o_query = wp_parse_args( $o2o_query, array(
 					'direction' => 'to',
@@ -200,5 +199,5 @@ function is_o2o_connection( $a_wp_query = null, $connection_name = null ) {
 		return false;
 	}
 
-	return is_null( $connection_name ) || $connection_name == $a_wp_query->connection->get_name();
+	return is_null( $connection_name ) || $connection_name == $a_wp_query->connection;
 }
