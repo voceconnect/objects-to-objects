@@ -296,10 +296,11 @@ if ( !function_exists( 'get_post_id_by_name' ) ) {
 	/**
 	 * Hook to delete cache post names when a new post is added with a name 
 	 */
-	add_action('wp_insert_post_data', function($data, $post_arr) {
+	add_filter('wp_insert_post_data', function($data, $post_arr) {
 		if(!isset($post_arr['ID']) && !empty($data['post_name'])) {
 			wp_cache_delete('post_by_name', $data['post_name']);
 		}
+		return $data;
 	}, 10, 2);
 	
 wp_delete_post();
