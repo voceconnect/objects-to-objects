@@ -24,6 +24,27 @@ class O2O {
 			require_once(__DIR__ . '/admin/admin.php');
 			O2O_Admin::init();
 		}
+		
+		//@todo, move this to a better location
+		add_filter( 'archive_template', function($template) {
+				global $wp_query;
+				if ( is_o2o_connection() ) {
+					$additional_templates = array( );
+
+					if ( ($post_type = ( array ) get_query_var( 'post_type' )) && (count( $post_type ) == 1) ) {
+
+						$additional_templates[] = "o2o-{$wp_query->o2o_connection}-{$wp_query->query_vars['o2o_query']['direction']}-{$post_type[0]}.php";
+
+						$additional_templates[] = "o2o-{$wp_query->o2o_connection}-{$post_type[0]}.php";
+					}
+
+					$additional_templates[] = "o2o-{$wp_query->o2o_connection}.php";
+					if ( $o2o_template = locate_template( $additional_templates ) ) {
+						return $o2o_template;
+					}
+				}
+				return $template;
+			} );
 	}
 
 	public static function Enable_Rewrites( $enabled = true ) {
