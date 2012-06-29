@@ -26,7 +26,7 @@ class O2O {
 		}
 	}
 
-	private static function Enable_Rewrites( $enabled = true ) {
+	public static function Enable_Rewrites( $enabled = true ) {
 		self::$rewrites_enabled = $enabled;
 	}
 

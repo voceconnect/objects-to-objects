@@ -55,7 +55,7 @@ class O2O_Query {
 	public static function _filter_posts_results( $posts, $wp_query ) {
 		if ( is_o2o_connection( $wp_query ) ) {
 
-			$connection = O2O_Connection_Factory::Get_Connection($wp_query->o2o_connection);
+			$connection = O2O_Connection_Factory::Get_Connection( $wp_query->o2o_connection );
 
 			//handling for connection based ordering
 			if ( isset( $wp_query->query_vars['o2o_orderby'] ) && $wp_query->query_vars['o2o_orderby'] == $connection->get_name() ) {
@@ -99,8 +99,8 @@ class O2O_Query {
 
 					//slice out the needed post_ids
 					$posts = array_slice( $posts, $pgstrt, $wp_query->query_vars['posts_per_page'] );
-					
-					$wp_query->set_found_posts($wp_query->query_vars, "LIMIT $pgstrt, {$wp_query->query_vars['posts_per_page']}");
+
+					$wp_query->set_found_posts( $wp_query->query_vars, "LIMIT $pgstrt, {$wp_query->query_vars['posts_per_page']}" );
 				}
 			}
 		}
@@ -115,11 +115,11 @@ class O2O_Query {
 	 */
 	public static function _filter_posts_clauses( $clauses, $wp_query ) {
 		if ( is_o2o_connection( $wp_query ) ) {
-			$connection = O2O_Connection_Factory::Get_Connection($wp_query->o2o_connection);
+			$connection = O2O_Connection_Factory::Get_Connection( $wp_query->o2o_connection );
 			$o2o_query = $wp_query->query_vars['o2o_query'];
 
 			//if we're doing custom order we need to expand the limits to include the complete set since limits can be done until after sorting
-			if ( $wp_query->query_vars['o2o_orderby'] == $connection->get_name() && !empty( $clauses['limits'] ) ) {
+			if ( isset($wp_query->query_vars['o2o_orderby']) && $wp_query->query_vars['o2o_orderby'] == $connection->get_name() && !empty( $clauses['limits'] ) ) {
 				$connection_args = $connection->get_args();
 				if ( $connection_args[$o2o_query['direction']]['limit'] > 0 ) {
 					$clauses['limits'] = 'LIMIT ' . $connection_args[$o2o_query['direction']]['limit'];
@@ -139,18 +139,37 @@ class O2O_Query {
 	 * @todo add handling for returning empty result for invalid/empty connection queries
 	 */
 	public static function _action_parse_query( $wp_query ) {
+
+		self::_transform_query_vars( $wp_query->query_vars );
+
 		if ( isset( $wp_query->query_vars['o2o_query'] ) && is_array( $wp_query->query_vars['o2o_query'] ) && isset( $wp_query->query_vars['o2o_query']['connection'] ) ) {
-			$o2o_query = $wp_query->query_vars['o2o_query'];
+			$o2o_query = &$wp_query->query_vars['o2o_query'];
 			if ( $connection = O2O_Connection_Factory::Get_Connection( $o2o_query['connection'] ) ) {
 				$wp_query->o2o_connection = $o2o_query['connection'];
 
 				$o2o_query = wp_parse_args( $o2o_query, array(
 					'direction' => 'to',
-					'id' => get_the_ID()
+					'id' => false
 					) );
 
 				if ( !in_array( $o2o_query['direction'], array( 'to', 'from' ) ) )
 					$o2o_query['direction'] = 'to';
+				
+				//set the id if we don't have it
+				if ( !$o2o_query['id'] && !empty( $o2o_query['post_name'] ) ) {
+					$name_post_types = $o2o_query['direction'] == 'to' ? $connection->from() : $connection->to();
+					$o2o_query['id'] = get_post_id_by_name($o2o_query['post_name'], $name_post_types);
+				}
+				
+				//set the queried object
+				if($wp_query->queried_object = get_post($o2o_query['id'])) {
+					$wp_query->queried_object_id = $wp_query->queried_object->ID;
+					$wp_query->is_home = false;
+					$wp_query->is_archive = true;
+				} else {
+					//make it a 404
+					$wp_query->is_404 = true;
+				}
 
 				//orderby handling
 				if ( $wp_query->get( 'orderby' ) == $connection->get_name() ) {
@@ -170,6 +189,7 @@ class O2O_Query {
 
 				//set the post_ids based on the connection
 				$connected_ids = $o2o_query['direction'] == 'to' ? $connection->get_connected_to_objects( $o2o_query['id'] ) : $connection->get_connected_from_objects( $o2o_query['id'] );
+
 				if ( $wp_query->query_vars['post__in'] ) {
 					$post__in = array_map( 'absint', $q['post__in'] );
 					$wp_query->query_vars['post__in'] = array_intersect( $connected_ids, $post__in );
@@ -182,8 +202,33 @@ class O2O_Query {
 				}
 
 				if ( !isset( $wp_query->query_vars['post_type'] ) )
-					$wp_query->query_vars['post_type'] = $o2o_query['direction'] == 'to' ? $connection->to() : $connected->from();
+					$wp_query->query_vars['post_type'] = $o2o_query['direction'] == 'to' ? $connection->to() : $connection->from();
 			}
+		}
+	}
+
+	/**
+	 * Helper function to tranform less structured or older version of o2o query vars into 
+	 * the core version
+	 * @param array $qv 
+	 */
+	private static function _transform_query_vars( &$qv ) {
+		$o2o_query = array();
+		$arr = array(
+			'connection_name' => 'connection',
+			'connection_dir' => 'direction',
+			'connected_id' => 'id', 
+			'connected_name' => 'post_name',
+		);
+		
+		foreach($arr as $old_name => $new_name) {
+			if(isset($qv[$old_name])) {
+				$o2o_query[$new_name] = $qv[$old_name];
+			}
+		}
+		
+		if(count($o2o_query)) {
+			$qv['o2o_query'] = $o2o_query;
 		}
 	}
 
@@ -200,4 +245,64 @@ function is_o2o_connection( $a_wp_query = null, $connection_name = null ) {
 	}
 
 	return is_null( $connection_name ) || $connection_name == $a_wp_query->connection;
+}
+
+if ( !function_exists( 'get_post_id_by_name' ) ) {
+
+	/**
+	 * @global DB $wpdb
+	 * @param string $post_name
+	 * @param string $post_type
+	 * @return $post_id
+	 */
+	function get_post_id_by_name( $post_name, $post_types ) {
+		global $wpdb;
+		
+		$post_types = array_map(array($wpdb, 'escape'), (array) $post_types);
+		
+		sort($post_types); //put the post types in an order for cachekey purposes
+		
+		$cache_bucket_key = 'post_by_name_' . $post_name;
+		$cache_key = substr(md5(serialize($post_types)), 0, 25);
+		
+		$cache_bucket = wp_cache_get($cache_bucket_key);
+		if(!is_array( $cache_bucket)) {
+			$cache_bucket = array();
+		}
+		
+		$post_id = isset($cache_bucket[$cache_key]) ? $cache_bucket[$cache_key] : null;
+		
+		if(!$post_id) {
+			$post_types_in = "('" . implode(', ', $post_types) . "')";
+
+			$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_name = %s AND post_type in {$post_types_in} limit 1", $post_name ) );
+			
+			$cache_bucket[$cache_key] = $post_id;
+			wp_cache_set($cache_bucket_key, $cache_bucket);
+		}
+		
+		return $post_id;
+	}
+	/**
+	 * Hook to delete cached post_names if a post changes it's name
+	 */
+	add_action('post_updated', function($post_id, $post_after, $post_before) {
+		if(isset($post_before->post_name) && strlen( $post_before->post_name) > 0 && $post_after->post_name != $post_before->post_name){
+			wp_cache_delete('post_by_name_' . $post_before->post_name);
+			wp_cache_delete('post_by_name_' . $post_after->post_name);
+		}
+	}, 10, 3);
+	
+	/**
+	 * Hook to delete cache post names when a new post is added with a name 
+	 */
+	add_action('wp_insert_post_data', function($data, $post_arr) {
+		if(!isset($post_arr['ID']) && !empty($data['post_name'])) {
+			wp_cache_delete('post_by_name', $data['post_name']);
+		}
+	}, 10, 2);
+	
+wp_delete_post();
+	
+
 }
