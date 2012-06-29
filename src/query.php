@@ -244,7 +244,7 @@ function is_o2o_connection( $a_wp_query = null, $connection_name = null ) {
 		return false;
 	}
 
-	return is_null( $connection_name ) || $connection_name == $a_wp_query->connection;
+	return is_null( $connection_name ) || $connection_name == $a_wp_query->o2o_connection;
 }
 
 if ( !function_exists( 'get_post_id_by_name' ) ) {
