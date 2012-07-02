@@ -258,6 +258,12 @@ if ( !function_exists( 'get_post_id_by_name' ) ) {
 	function get_post_id_by_name( $post_name, $post_types ) {
 		global $wpdb;
 		
+		//clean up the post_name
+		$post_name = rawurlencode( urldecode( $post_name ) );
+		$post_name = str_replace( '%2F', '/', $post_name );
+		$post_name = str_replace( '%20', ' ', $post_name );
+		$post_name = array_pop( explode( '/', trim( $post_name, '/' ) ) );
+
 		$post_types = array_map(array($wpdb, 'escape'), (array) $post_types);
 		
 		sort($post_types); //put the post types in an order for cachekey purposes
