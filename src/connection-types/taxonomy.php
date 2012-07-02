@@ -50,9 +50,10 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 			}
 		}
 		
-		do_action('o2o_set_connected_to', $from_object_id, $connected_to_ids, $append);
-
 		wp_set_object_terms( $from_object_id, $term_ids, $this->taxonomy, $append );
+		
+		do_action('o2o_set_connected_to', $from_object_id, $connected_to_ids, $this->name, $append);
+
 	}
 
 	/**
