@@ -302,8 +302,6 @@ if ( !function_exists( 'get_post_id_by_name' ) ) {
 		}
 		return $data;
 	}, 10, 2);
-	
-wp_delete_post();
-	
+
 
 }
