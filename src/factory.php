@@ -20,7 +20,7 @@ class O2O_Connection_Factory {
 				) );
 
 			if ( !class_exists( 'O2O_Connection_Taxonomy' ) )
-				require_once(__DIR__ . '/connection-types/taxonomy.php');
+				require_once(__DIR__ . '/connection-types/taxonomy/taxonomy.php');
 
 			$connection = new O2O_Connection_Taxonomy( $name, $from_object_types, $to_object_types, $args );
 
@@ -92,6 +92,15 @@ interface iO2O_Connection {
 	 * @return boolean 
 	 */
 	public function is_sortable($direction = 'to');
+	
+	/**
+	 * Returns the class name of the query_modifier for this type of connection
+	 * 
+	 * @todo move this to a factory
+	 * 
+	 * @return O2O_Query_Modifier 
+	 */
+	public function get_query_modifier();
 }
 
 abstract class aO2O_Connection implements iO2O_Connection {
@@ -159,6 +168,17 @@ abstract class aO2O_Connection implements iO2O_Connection {
 	 */
 	public function is_sortable( $direction = 'from' ) {
 		return (bool) $this->args[$direction]['sortable'];
+	}
+	
+	/**
+	 * Returns the class name of the query_modifier for this type of connection
+	 * 
+	 * @todo move this to a factory
+	 * 
+	 * @return O2O_Query_Modifier 
+	 */
+	public function get_query_modifier() {
+		return 'O2O_Query_Modifier';
 	}
 
 }

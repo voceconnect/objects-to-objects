@@ -58,7 +58,7 @@ class O2O_Query {
 			$connection = O2O_Connection_Factory::Get_Connection( $wp_query->o2o_connection );
 
 			//handling for connection based ordering
-			if ( isset( $wp_query->query_vars['o2o_orderby'] ) && $wp_query->query_vars['o2o_orderby'] == $connection->get_name() ) {
+			if ( isset( $wp_query->query_vars['o2o_orderby'] ) && $wp_query->query_vars['o2o_orderby'] == $connection->get_name() && $connection->is_sortable( $o2o_query['direction'] ) ) {
 				$o2o_query = $wp_query->query_vars['o2o_query'];
 
 				$connected_ids = $o2o_query['direction'] == 'to' ? $connection->get_connected_to_objects( $o2o_query['id'] ) : $connection->get_connected_from_objects( $o2o_query['id'] );
@@ -170,6 +170,8 @@ class O2O_Query {
 					//make it a 404
 					$wp_query->is_404 = true;
 				}
+				
+				
 
 				//orderby handling
 				if ( $wp_query->get( 'orderby' ) == $connection->get_name() ) {
@@ -186,23 +188,13 @@ class O2O_Query {
 						$wp_query->query_vars['order'] = 'ASC';
 					}
 				}
-
-				//set the post_ids based on the connection
-				$connected_ids = $o2o_query['direction'] == 'to' ? $connection->get_connected_to_objects( $o2o_query['id'] ) : $connection->get_connected_from_objects( $o2o_query['id'] );
-
-				if ( $wp_query->query_vars['post__in'] ) {
-					$post__in = array_map( 'absint', $q['post__in'] );
-					$wp_query->query_vars['post__in'] = array_intersect( $connected_ids, $post__in );
-				} elseif ( $wp_query->query_vars['post__not_in'] ) {
-					$post__not_in = implode( ',', array_map( 'absint', $q['post__not_in'] ) );
-					$wp_query->query_vars['post__in'] = array_diff( $connected_ids, $post__not_in );
-					unset( $wp_query->query_vars['post__not_in'] );
-				} else {
-					$wp_query->query_vars['post__in'] = $connected_ids;
-				}
-
+				
 				if ( !isset( $wp_query->query_vars['post_type'] ) )
 					$wp_query->query_vars['post_type'] = $o2o_query['direction'] == 'to' ? $connection->to() : $connection->from();
+				
+				$query_modifier = $connection->get_query_modifier();
+				
+				call_user_func_array(array($query_modifier, 'parse_query'), array($wp_query, $connection, $o2o_query));
 			}
 		}
 	}
@@ -310,4 +302,22 @@ if ( !function_exists( 'get_post_id_by_name' ) ) {
 	}, 10, 2);
 
 
+}
+
+class O2O_Query_Modifier {
+	public static function parse_query($wp_query, $connection, $o2o_query) {
+		//set the post_ids based on the connection
+		$connected_ids = $o2o_query['direction'] == 'to' ? $connection->get_connected_to_objects( $o2o_query['id'] ) : $connection->get_connected_from_objects( $o2o_query['id'] );
+
+		if ( $wp_query->query_vars['post__in'] ) {
+			$post__in = array_map( 'absint', $q['post__in'] );
+			$wp_query->query_vars['post__in'] = array_intersect( $connected_ids, $post__in );
+		} elseif ( $wp_query->query_vars['post__not_in'] ) {
+			$post__not_in = implode( ',', array_map( 'absint', $q['post__not_in'] ) );
+			$wp_query->query_vars['post__in'] = array_diff( $connected_ids, $post__not_in );
+			unset( $wp_query->query_vars['post__not_in'] );
+		} else {
+			$wp_query->query_vars['post__in'] = $connected_ids;
+		}
+	}
 }

@@ -1,8 +1,13 @@
 <?php
+require_once(__DIR__ . '/query_modifier.php');
 
 class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection {
 
 	private $taxonomy;
+	
+	public function get_taxonomy() {
+		return $this->taxonomy;
+	}
 
 	public function __construct( $name, $from_object_types, $to_object_types, $args = array( ) ) {
 		parent::__construct( $name, $from_object_types, $to_object_types, $args );
@@ -92,6 +97,17 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 	}
 	
 	/**
+	 * Returns the class name of the query_modifier for this type of connection
+	 * 
+	 * @todo move this to a factory
+	 * 
+	 * @return O2O_Query_Modifier 
+	 */
+	public function get_query_modifier() {
+		return 'O2O_Query_Modifier_Taxonomy';
+	}
+	
+	/**
 	 * Returns the term_ids for the connected terms to an object
 	 * @param intt $object_id
 	 * @return array
@@ -119,7 +135,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 	 * @param bool $create Whether to create the term if it doesn't exist
 	 * @return int 
 	 */
-	private static function GetObjectTermID( $object_id, $create = true ) {
+	public static function GetObjectTermID( $object_id, $create = true ) {
 		if ( !( $term_id = intval( get_post_meta( $object_id, 'o2o_term_id', true ) ) ) && $create ) {
 			$term_id = self::CreateTermForObject( $object_id );
 		}
