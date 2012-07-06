@@ -54,55 +54,11 @@ class O2O_Query {
 	 */
 	public static function _filter_posts_results( $posts, $wp_query ) {
 		if ( is_o2o_connection( $wp_query ) ) {
-
+			
 			$connection = O2O_Connection_Factory::Get_Connection( $wp_query->o2o_connection );
-
-			//handling for connection based ordering
-			if ( isset( $wp_query->query_vars['o2o_orderby'] ) && $wp_query->query_vars['o2o_orderby'] == $connection->get_name() && $connection->is_sortable( $o2o_query['direction'] ) ) {
-				$o2o_query = $wp_query->query_vars['o2o_query'];
-
-				$connected_ids = $o2o_query['direction'] == 'to' ? $connection->get_connected_to_objects( $o2o_query['id'] ) : $connection->get_connected_from_objects( $o2o_query['id'] );
-
-				//reorder post_ids by $connected_ids order
-				usort( $posts, function ($post_a, $post_b) use ($connected_ids) {
-						$pos_a = array_search( $post_a->ID, $connected_ids );
-						$pos_b = array_search( $post_b->ID, $connected_ids );
-						if ( $pos_a === false && $pos_b === false )
-							return 0;
-						elseif ( $pos_a === false )
-							return 1;
-						elseif ( $pos_b === false )
-							return -1;
-						return $pos_a < $pos_b ? -1 : 1;
-					} );
-
-				//flip if we're doing DESC
-				if ( $wp_query->get( 'order' ) == 'DESC' ) {
-					$posts = array_reverse( $posts );
-				}
-
-				//extract the needed ids for the current pagination
-				if ( empty( $wp_query->query_vars['nopaging'] ) ) {
-					$page = absint( $wp_query->query_vars['paged'] );
-					if ( !$page )
-						$page = 1;
-
-					if ( empty( $wp_query->query_vars['offset'] ) ) {
-						$pgstrt = ($page - 1) * $wp_query->query_vars['posts_per_page'];
-					} else { // we're ignoring $page and using 'offset'
-						$wp_query->query_vars['offset'] = absint( $wp_query->query_vars['offset'] );
-						$pgstrt = $wp_query->query_vars['offset'] . ', ';
-					}
-
-					//store original result count so we can use it later to filter the found posts
-					$wp_query->o2o_found_posts = count( $posts );
-
-					//slice out the needed post_ids
-					$posts = array_slice( $posts, $pgstrt, $wp_query->query_vars['posts_per_page'] );
-
-					$wp_query->set_found_posts( $wp_query->query_vars, "LIMIT $pgstrt, {$wp_query->query_vars['posts_per_page']}" );
-				}
-			}
+			$query_modifier = $connection->get_query_modifier();
+				
+			call_user_func_array(array($query_modifier, 'posts_results'), array($posts, $wp_query, $connection, $wp_query->query_vars['o2o_query']));
 		}
 		return $posts;
 	}
@@ -114,15 +70,16 @@ class O2O_Query {
 	 * @return array 
 	 */
 	public static function _filter_posts_clauses( $clauses, $wp_query ) {
+		global $wpdb;
 		if ( is_o2o_connection( $wp_query ) ) {
 			$connection = O2O_Connection_Factory::Get_Connection( $wp_query->o2o_connection );
 			$o2o_query = $wp_query->query_vars['o2o_query'];
 
 			//if we're doing custom order we need to expand the limits to include the complete set since limits can be done until after sorting
-			if ( isset($wp_query->query_vars['o2o_orderby']) && $wp_query->query_vars['o2o_orderby'] == $connection->get_name() && !empty( $clauses['limits'] ) ) {
-				$connection_args = $connection->get_args();
-				if ( $connection_args[$o2o_query['direction']]['limit'] > 0 ) {
-					$clauses['limits'] = 'LIMIT ' . $connection_args[$o2o_query['direction']]['limit'];
+			if ( isset($wp_query->query_vars['o2o_orderby']) && $wp_query->query_vars['o2o_orderby'] == $connection->get_name() ) {
+				$connected_ids = $o2o_query['direction'] == 'to' ? $connection->get_connected_to_objects( $o2o_query['id'] ) : $connection->get_connected_from_objects( $o2o_query['id'] );
+				if(count($connected_ids) > 1) {
+					$clauses['orderby'] = "ORDER BY find_in_set($wpdb->posts.ID, '" . implode(', ', $connected_ids) . "') ". $wp_query->query_vars['order'];
 				}
 			}
 		}

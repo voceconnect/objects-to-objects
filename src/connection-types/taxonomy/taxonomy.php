@@ -56,7 +56,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 		}
 		
 		wp_set_object_terms( $from_object_id, $term_ids, $this->taxonomy, $append );
-		
+		wp_cache_delete($from_object_id, $this->taxonomy . '_relationships_ordered');
 		do_action('o2o_set_connected_to', $from_object_id, $connected_to_ids, $this->name, $append);
 
 	}
@@ -113,13 +113,11 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 	 * @return array
 	 */
 	private function get_connected_terms( $object_id ) {
-		$terms = get_object_term_cache( $object_id, $this->taxonomy );
-
-		$terms = wp_cache_get( $this->taxonomy . '_relationships_ordered' );
+		$terms = wp_cache_get( $object_id, $this->taxonomy . '_relationships_ordered' );
 
 		if ( false === $terms ) {
 			$terms = wp_get_object_terms( $object_id, $this->taxonomy, array( 'orderby' => 'term_order', 'fields' => 'ids' ) );
-			wp_cache_add( $object_id, $terms, $this->taxonomy . '_relationships_ordered' );
+			wp_cache_set( $object_id, $terms, $this->taxonomy . '_relationships_ordered' );
 		}
 
 		if ( empty( $terms ) )
