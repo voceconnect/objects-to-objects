@@ -45,6 +45,36 @@ class O2O {
 				}
 				return $template;
 			} );
+			
+		//redirect canonical o2o based pages to canonical
+		add_filter('template_redirect', function(){
+			global $wp_query, $wpdb;
+			if ( is_404() && is_o2o_connection() && !get_queried_object_id() ) {
+				$o2o_query = $wp_query->query_vars['o2o_query'];
+				
+				if ( $connection = O2O_Connection_Factory::Get_Connection( $o2o_query['connection'] ) ) {
+					if(isset( $o2o_query['post_name'] ) ) {
+						$post_name = $o2o_query['post_name'];
+						$name_post_types = $o2o_query['direction'] == 'to' ? $connection->from() : $connection->to();
+						
+						$post_name = rawurlencode( urldecode( $post_name ) );
+						$post_name = str_replace( '%2F', '/', $post_name );
+						$post_name = str_replace( '%20', ' ', $post_name );
+						$post_name = array_pop( explode( '/', trim( $post_name, '/' ) ) );
+
+						$post_types = array_map(array($wpdb, 'escape'), (array) $name_post_types);
+						$post_types_in = "('" . implode(', ', $post_types) . "')";
+						$post_id = $wpdb->get_var($wpdb->prepare("SELECT post_id from $wpdb->postmeta PM JOIN $wpdb->posts P ON P.ID = PM.post_id ".
+								"WHERE meta_key = '_wp_old_slug' AND meta_value = %s AND post_type in {$post_types_in} limit 1", $post_name));
+						if($post_id) {
+							if($link = get_permalink($post_id)) {
+								wp_redirect( $link, 301 );
+							}
+						}
+					}	
+				}
+			}
+		}, 10, 2);
 	}
 
 	public static function Enable_Rewrites( $enabled = true ) {
