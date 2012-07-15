@@ -12,7 +12,7 @@ class O2O_Query_Modifier_Taxonomy extends O2O_Query_Modifier {
 		if($o2o_query['direction'] == 'to') {
 			parent::parse_query($wp_query, $connection, $o2o_query);
 		} else {
-			$object_term = O2O_Connection_Taxonomy::GetObjectTermID($o2o_query['id'], false);
+			$object_term = O2O_Connection_Taxonomy::GetObjectTermID($o2o_query['id'], $connection->get_taxonomy(), false);
 			$tax_query = isset($wp_query->query_vars['tax_query']) ? $wp_query->query_vars['tax_query'] : array();
 			
 			$tax_query[] = array(
