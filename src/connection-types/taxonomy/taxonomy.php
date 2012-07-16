@@ -136,7 +136,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 	 * @return int 
 	 */
 	public static function GetObjectTermID( $object_id, $taxonomy, $create = true ) {
-		if ( !( $term_id = intval( get_post_meta( $object_id, 'o2o_term_id', true ) ) ) && $create ) {
+		if ( !(( $term_id = intval( get_post_meta( $object_id, 'o2o_term_id', true ) ) ) && term_exists( $term_id, $taxonomy ) ) && $create ) {
 			$term_id = self::CreateTermForObject( $object_id, $taxonomy );
 		}
 		return $term_id;
