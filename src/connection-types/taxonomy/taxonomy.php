@@ -43,7 +43,8 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 			return new WP_Error( 'invalid_post_type', 'The given post type is not valid for this connection type.' );
 		}
 
-		$term_ids = array_map( array( __CLASS__, 'GetObjectTermID' ), $connected_to_ids );
+		$taxonomy = $this->taxonomy;
+		$term_ids = array_map( function($object_id) use($taxonomy) { return O2O_Connection_Taxonomy::GetObjectTermID($object_id, $taxonomy); }, $connected_to_ids );
 
 		//because wp_set_object_terms will only work if the term exists for the given taxonomy, we need to verify that each term exists
 		foreach ( $term_ids as $term_id ) {
@@ -89,7 +90,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 			return new WP_Error( 'invalid_post_type', 'The given post type is not valid for this connection type.' );
 		}
 
-		$term_id = self::GetObjectTermID( $to_object_id );
+		$term_id = self::GetObjectTermID( $to_object_id, $this->taxonomy );
 
 		$connected_from_objects = get_objects_in_term( $term_id, $this->taxonomy );
 
@@ -130,12 +131,13 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 	 * Returns the term_id for the given object_id.  A term is shared across all taxonomies
 	 * for a single object.
 	 * @param int $object_id
+	 * @param string taxonomy
 	 * @param bool $create Whether to create the term if it doesn't exist
 	 * @return int 
 	 */
-	public static function GetObjectTermID( $object_id, $create = true ) {
-		if ( !( $term_id = intval( get_post_meta( $object_id, 'o2o_term_id', true ) ) ) && $create ) {
-			$term_id = self::CreateTermForObject( $object_id );
+	public static function GetObjectTermID( $object_id, $taxonomy, $create = true ) {
+		if ( !(( $term_id = intval( get_post_meta( $object_id, 'o2o_term_id', true ) ) ) && term_exists( $term_id, $taxonomy ) ) && $create ) {
+			$term_id = self::CreateTermForObject( $object_id, $taxonomy );
 		}
 		return $term_id;
 	}
@@ -145,30 +147,21 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 	 * doesn't support inserting terms except for a specific taxonomy.
 	 * @global DB $wpdb
 	 * @param int $object_id
+	 * @param string taxonomy
 	 * @return int|WP_Error 
 	 */
-	private static function CreateTermForObject( $object_id ) {
+	private static function CreateTermForObject( $object_id, $taxonomy ) {
 		global $wpdb;
 
 		$name = $slug = 'o2o-post-' . $object_id;
-		if ( $term_id = term_exists( $slug ) ) {
-
-			$existing_object_id = self::GetObjectForTerm( $term_id );
-
-			if ( $existing_object_id === false ) {
-				//somehow have orphaned term, just reattach
-			} elseif ( $existing_object_id !== $object_id ) {
-				//we have a term pointing to the wrong object for some reason, this may change later, but for now, we're
-				//assuming that the connections made to this term are for the object which has a matching id, so leave 
-				//connections as they are and just fix term connection
-				delete_post_meta( $existing_object_id, 'o2o_term_id' );
+		if ( !($term = term_exists( $name, $taxonomy )) ) {
+			$term = wp_insert_term( $slug, $taxonomy, array( 'slug' => $slug ) );
+			if ( is_wp_error( $term ) ) {
+				return $term;
 			}
-		} else {
-			//create the new term
-			if ( false === $wpdb->insert( $wpdb->terms, compact( 'name', 'slug' ) ) )
-				return new WP_Error( 'db_insert_error', __( 'Could not insert term into the database' ), $wpdb->last_error );
-			$term_id = ( int ) $wpdb->insert_id;
+
 		}
+		$term_id = ( int ) $term['term_id'];
 
 		add_post_meta( $object_id, 'o2o_term_id', $term_id, true );
 		wp_cache_set( 'o2o_object_' . $term_id, $object_id );
@@ -181,7 +174,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 	 * @param int $term_id The term should be for an o2o term only
 	 * @return int|bool the object_id of the matching term, or false if no object exists 
 	 */
-	private static function GetObjectForTerm( $term_id ) {
+	public static function GetObjectForTerm( $term_id ) {
 		$cache_key = 'o2o_object_' . $term_id;
 
 		if ( !($object_id = wp_cache_get( $cache_key )) ) {
