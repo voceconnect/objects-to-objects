@@ -17,6 +17,7 @@ class O2O_Connection_Factory {
 		if ( !$connection = self::Get_Connection( $name ) ) {
 
 			$args = wp_parse_args( $args, array(
+				'reciprocal' => false,
 				) );
 
 			if ( !class_exists( 'O2O_Connection_Taxonomy' ) )
@@ -135,7 +136,7 @@ abstract class aO2O_Connection implements iO2O_Connection {
 		
 		$args['to'] = wp_parse_args($args['to'], $defaults['to']);
 		$args['from'] = wp_parse_args($args['from'], $defaults['from']);
-
+		
 		$this->args = $args;
 	}
 
