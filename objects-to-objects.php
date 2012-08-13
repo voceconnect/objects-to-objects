@@ -83,4 +83,4 @@ class O2O {
 
 }
 
-add_action( 'init', array( 'O2O', 'init' ), 99 );
+add_action( 'init', array( 'O2O', 'init' ), 20 );
