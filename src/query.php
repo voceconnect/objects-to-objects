@@ -79,7 +79,7 @@ class O2O_Query {
 			if ( isset($wp_query->query_vars['o2o_orderby']) && $wp_query->query_vars['o2o_orderby'] == $connection->get_name() ) {
 				$connected_ids = $o2o_query['direction'] == 'to' ? $connection->get_connected_to_objects( $o2o_query['id'] ) : $connection->get_connected_from_objects( $o2o_query['id'] );
 				if(count($connected_ids) > 1) {
-					$clauses['orderby'] = "ORDER BY find_in_set($wpdb->posts.ID, '" . implode(', ', $connected_ids) . "') ". $wp_query->query_vars['order'];
+					$clauses['orderby'] = " find_in_set($wpdb->posts.ID, '" . implode(', ', $connected_ids) . "') ". $wp_query->query_vars['order'];
 				}
 			}
 		}
