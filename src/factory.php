@@ -130,12 +130,17 @@ abstract class aO2O_Connection implements iO2O_Connection {
 				'limit' => -1,
 				'labels' => array(),
 			),
+			'metabox' => array(
+				'orderby' => '',
+				'order' => ''
+			)
 		);
 		
 		$args = wp_parse_args($args, $defaults);
 		
 		$args['to'] = wp_parse_args($args['to'], $defaults['to']);
 		$args['from'] = wp_parse_args($args['from'], $defaults['from']);
+		$args['metabox'] = wp_parse_args($args['metabox'], $defaults['metabox']);
 		
 		$this->args = $args;
 	}

@@ -38,6 +38,8 @@ class O2O_Admin {
 			'selected' => $selected,
 			'sortable' => $connection->is_sortable( $direction ),
 			'labels' => $connection_args[$direction]['labels'],
+			'orderby' => $connection_args['metabox']['orderby'],
+			'order' => $connection_args['metabox']['order']
 		);
 
 		echo post_selection_ui( $connection_name . '_' . $direction, $args );
