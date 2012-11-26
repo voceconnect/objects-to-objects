@@ -16,6 +16,11 @@ class O2O {
 		
 		O2O_Query::init();
 		
+		if ( function_exists( 'wpcom_vip_enable_term_order_functionality' ) ) {
+			//ensure that the ability to sort terms is setup on WordPress.com VIP
+			wpcom_vip_enable_term_order_functionality();
+		}
+		
 		if ( self::$rewrites_enabled ) {
 			O2O_Rewrites::Init();
 		}
