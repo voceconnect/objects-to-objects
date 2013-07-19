@@ -44,20 +44,20 @@ class O2O_Query {
 	 * Filter run on posts to apply paging/reordering to the results.
 	 * It sets a o2o_order_handled property on the WP_Query instance to prevent the
 	 * filtering from happening a second time on posts_results
-	 * 
+	 *
 	 * $wp_query->set_found_posts() is re-run since it was previously run before this
 	 * filter was able to update the counts
-	 * 
+	 *
 	 * @param array $posts
 	 * @param WP_Query $wp_query
-	 * @return array 
+	 * @return array
 	 */
 	public static function _filter_posts_results( $posts, $wp_query ) {
 		if ( is_o2o_connection( $wp_query ) ) {
-			
+
 			$connection = O2O_Connection_Factory::Get_Connection( $wp_query->o2o_connection );
 			$query_modifier = $connection->get_query_modifier();
-				
+
 			call_user_func_array(array($query_modifier, 'posts_results'), array($posts, $wp_query, $connection, $wp_query->query_vars['o2o_query']));
 		}
 		return $posts;
@@ -67,7 +67,7 @@ class O2O_Query {
 	 * Filters post query clauses based on the connection
 	 * @param array $clauses
 	 * @param WP_Query $wp_query
-	 * @return array 
+	 * @return array
 	 */
 	public static function _filter_posts_clauses( $clauses, $wp_query ) {
 		global $wpdb;
@@ -90,8 +90,8 @@ class O2O_Query {
 	 * Runs on the parse_query action to alter the WP_Query->query_vars
 	 * based on any used connections in the query.  This standardizes the o2o_query
 	 * args and makes any needed property changes to the WP_Query instance
-	 * @param WP_Query $wp_query 
-	 * 
+	 * @param WP_Query $wp_query
+	 *
 	 * @todo add check that ID is valid post type
 	 * @todo add handling for returning empty result for invalid/empty connection queries
 	 */
@@ -111,13 +111,13 @@ class O2O_Query {
 
 				if ( !in_array( $o2o_query['direction'], array( 'to', 'from' ) ) )
 					$o2o_query['direction'] = 'to';
-				
+
 				//set the id if we don't have it
 				if ( !$o2o_query['id'] && !empty( $o2o_query['post_name'] ) ) {
 					$name_post_types = $o2o_query['direction'] == 'to' ? $connection->from() : $connection->to();
 					$o2o_query['id'] = get_post_id_by_name($o2o_query['post_name'], $name_post_types);
 				}
-				
+
 				//set the queried object
 				if($wp_query->queried_object = get_post($o2o_query['id'])) {
 					$wp_query->queried_object_id = $wp_query->queried_object->ID;
@@ -127,8 +127,8 @@ class O2O_Query {
 					//make it a 404
 					$wp_query->is_404 = true;
 				}
-				
-				
+
+
 
 				//orderby handling
 				if ( $wp_query->get( 'orderby' ) == $connection->get_name() ) {
@@ -145,37 +145,37 @@ class O2O_Query {
 						$wp_query->query_vars['order'] = 'ASC';
 					}
 				}
-				
+
 				if ( !isset( $wp_query->query_vars['post_type'] ) )
 					$wp_query->query_vars['post_type'] = $o2o_query['direction'] == 'to' ? $connection->to() : $connection->from();
-				
+
 				$query_modifier = $connection->get_query_modifier();
-				
+
 				call_user_func_array(array($query_modifier, 'parse_query'), array($wp_query, $connection, $o2o_query));
 			}
 		}
 	}
 
 	/**
-	 * Helper function to tranform less structured or older version of o2o query vars into 
+	 * Helper function to tranform less structured or older version of o2o query vars into
 	 * the core version
-	 * @param array $qv 
+	 * @param array $qv
 	 */
 	private static function _transform_query_vars( &$qv ) {
 		$o2o_query = array();
 		$arr = array(
 			'connection_name' => 'connection',
 			'connection_dir' => 'direction',
-			'connected_id' => 'id', 
+			'connected_id' => 'id',
 			'connected_name' => 'post_name',
 		);
-		
+
 		foreach($arr as $old_name => $new_name) {
 			if(isset($qv[$old_name])) {
 				$o2o_query[$new_name] = $qv[$old_name];
 			}
 		}
-		
+
 		if(count($o2o_query)) {
 			$qv['o2o_query'] = $o2o_query;
 		}
@@ -206,36 +206,36 @@ if ( !function_exists( 'get_post_id_by_name' ) ) {
 	 */
 	function get_post_id_by_name( $post_name, $post_types ) {
 		global $wpdb;
-		
+
 		//clean up the post_name
 		$post_name = rawurlencode( urldecode( $post_name ) );
 		$post_name = str_replace( '%2F', '/', $post_name );
 		$post_name = str_replace( '%20', ' ', $post_name );
 		$post_name = array_pop( explode( '/', trim( $post_name, '/' ) ) );
 
-		$post_types = array_map(array($wpdb, 'escape'), (array) $post_types);
-		
+		$post_types = array_map( 'esc_sql', (array) $post_types);
+
 		sort($post_types); //put the post types in an order for cachekey purposes
-		
+
 		$cache_bucket_key = 'post_by_name_' . $post_name;
 		$cache_key = substr(md5(serialize($post_types)), 0, 25);
-		
+
 		$cache_bucket = wp_cache_get($cache_bucket_key);
 		if(!is_array( $cache_bucket)) {
 			$cache_bucket = array();
 		}
-		
+
 		$post_id = isset($cache_bucket[$cache_key]) ? $cache_bucket[$cache_key] : null;
-		
+
 		if(!$post_id) {
 			$post_types_in = "('" . implode(', ', $post_types) . "')";
 
 			$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_name = %s AND post_type in {$post_types_in} limit 1", $post_name ) );
-			
+
 			$cache_bucket[$cache_key] = $post_id;
 			wp_cache_set($cache_bucket_key, $cache_bucket);
 		}
-		
+
 		return $post_id;
 	}
 	/**
@@ -247,9 +247,9 @@ if ( !function_exists( 'get_post_id_by_name' ) ) {
 			wp_cache_delete('post_by_name_' . $post_after->post_name);
 		}
 	}, 10, 3);
-	
+
 	/**
-	 * Hook to delete cache post names when a new post is added with a name 
+	 * Hook to delete cache post names when a new post is added with a name
 	 */
 	add_filter('wp_insert_post_data', function($data, $post_arr) {
 		if(!isset($post_arr['ID']) && !empty($data['post_name'])) {
