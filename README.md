@@ -1,15 +1,15 @@
 Objects to Objects
 ==================
 
-Contributors: prettyboymp, klangley, csloisel, markparolisi, jeffstieler
-Tags: relationships, mapping, connections, many-to-many
-Requires at least: 3.2
-Tested up to: 3.5
-Stable tag: 1.0
-License: GPLv2 or later
+Contributors: prettyboymp, klangley, csloisel, markparolisi, jeffstieler  
+Tags: relationships, mapping, connections, many-to-many  
+Requires at least: 3.2  
+Tested up to: 3.5  
+Stable tag: 1.0  
+License: GPLv2 or later  
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A WordPress plugin/module that provides the ability to map relationships between posts and other post types.    
+A WordPress plugin/module that provides the ability to map relationships between posts and other post types.
 
 ## Description
 This plugin provides a development layer on top of WordPress' taxonomy system that simplifies the ability to create many-to-many relationships between post types.
@@ -84,6 +84,5 @@ O2O provides a custom WP_Query query_var that will filter the query based on the
 * ```o2o_query``` (array) - An array defining how a connection should be queried agaist.
 	* ```connection``` (string) - The key/name of the connection being queried against.
 	* ```direction``` (string) - Options 'to', 'from'.  Default: 'to'.  The side of the connection being queried.  When set to 'to', only ```$to_object_types``` will be returned.
-	* ```id``` (integer) - The ID of the post object from which the relationships will be queried.  
+	* ```id``` (integer) - The ID of the post object from which the relationships will be queried.
 	* ```post_name``` (string) - The post_name of the post object from which the relationships will be queried.  Will only be used if ```id``` is not set.
-	
