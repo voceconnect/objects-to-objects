@@ -21,10 +21,11 @@ This plugin provides a development layer on top of WordPress' taxonomy system th
 
 ### As theme or plugin dependency:
 > After dropping the plugin into the containing theme or plugin, add the following:
-
-	if( ! class_exists( 'O2O' ) ) {
-		require_once( $path_to_o2o . '/objects-to-objects.php' );
-	}
+```php
+if( ! class_exists( 'O2O' ) ) {
+	require_once( $path_to_o2o . '/objects-to-objects.php' );
+}
+```
 
 ## Usage
 
@@ -54,29 +55,31 @@ Relationships are registered directly through the ```O2O::Register_Connection()`
 
 #### Example
 
-	add_action('init', 'register_o2o_connection');
-	/**
-	 * Registers a many to many connection between posts and galleries that allows
-	 * related galleries to be assigned to a single post for listing.
-	 */
-	function register_o2o_connection() {
-		O2O::Register_Connection('post_galleries', 'post', 'gallery', array(
-			'reciprocal' => true,
-			'to' => array(
-				'sortable' => true,
-				'labels' => array(
-					'name' => 'Galleries',
-					'singular_name' => 'Gallery'
-				)
-			),
-			'from' => array(
-				'labels' => array(
-					'name' => 'Posts',
-					'singular_name' => 'Post'
-				)
+```php
+add_action('init', 'register_o2o_connection');
+/**
+ * Registers a many to many connection between posts and galleries that allows
+ * related galleries to be assigned to a single post for listing.
+ */
+function register_o2o_connection() {
+	O2O::Register_Connection('post_galleries', 'post', 'gallery', array(
+		'reciprocal' => true,
+		'to' => array(
+			'sortable' => true,
+			'labels' => array(
+				'name' => 'Galleries',
+				'singular_name' => 'Gallery'
 			)
-		));
-	}
+		),
+		'from' => array(
+			'labels' => array(
+				'name' => 'Posts',
+				'singular_name' => 'Post'
+			)
+		)
+	));
+}
+```
 
 ### Querying a connection
 O2O provides a custom WP_Query query_var that will filter the query based on the given connection details.
