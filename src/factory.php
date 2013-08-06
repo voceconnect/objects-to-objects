@@ -132,7 +132,8 @@ abstract class aO2O_Connection implements iO2O_Connection {
 			),
 			'metabox' => array(
 				'orderby' => '',
-				'order' => ''
+				'order' => '',
+				'context' => 'side'
 			)
 		);
 		

@@ -15,9 +15,9 @@ class O2O_Admin {
 		foreach ( O2O_Connection_Factory::Get_Connections() as $connection ) {
 			$connection_args = $connection->get_args();
 			if ( in_array( $post_type, $connection->from() ) ) {
-				add_meta_box( $connection->get_name(), isset( $connection_args['to']['labels']['name'] ) ? $connection_args['to']['labels']['name'] : 'Items', array( __CLASS__, 'meta_box' ), $post_type, 'side', 'low', array( 'connection' => $connection->get_name(), 'direction' => 'to' ) );
+				add_meta_box( $connection->get_name(), isset( $connection_args['to']['labels']['name'] ) ? $connection_args['to']['labels']['name'] : 'Items', array( __CLASS__, 'meta_box' ), $post_type, $connection_args['metabox']['context'], 'low', array( 'connection' => $connection->get_name(), 'direction' => 'to' ) );
 			} elseif ( $connection_args['reciprocal'] && in_array( $post_type, $connection->to() ) ) {
-				add_meta_box( $connection->get_name(), isset( $connection_args['from']['labels']['name'] ) ? $connection_args['from']['labels']['name'] : 'Items', array( __CLASS__, 'meta_box' ), $post_type, 'side', 'low', array( 'connection' => $connection->get_name(), 'direction' => 'from' ) );
+				add_meta_box( $connection->get_name(), isset( $connection_args['from']['labels']['name'] ) ? $connection_args['from']['labels']['name'] : 'Items', array( __CLASS__, 'meta_box' ), $post_type, $connection_args['metabox']['context'], 'low', array( 'connection' => $connection->get_name(), 'direction' => 'from' ) );
 			}
 		}
 	}
