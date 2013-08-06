@@ -51,6 +51,10 @@ Relationships are registered directly through the ```O2O::Register_Connection()`
 		* ```labels``` (array) - The labels to use with the connection interface.
 			* ```name``` (string) - The plural label to use when describing the connected objects.
 			* ```singular_name``` (string) - The singular label to use when describing the connected objects.
+	* ```metabox``` - (array) - An array of options specifically applied to the metabox user interface
+		* ```orderby``` (string) - Default: post_date. Field to order the posts by within the metabox.
+		* ```order``` (string) - Default: DESC. Order, ASC or DESC, to display the posts within the metabox.
+		* ```context``` (string) - Default: side. Context to display the metabox on the post edit screen. Options are side, normal, and advanced.
 
 
 #### Example
