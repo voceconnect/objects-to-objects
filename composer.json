@@ -17,7 +17,6 @@
     "require": {
         "voceconnect/post-selection-ui": "dev-master"
     },
-    "minimum-stability": "stable",
     "autoload": {
         "files": ["objects-to-objects.php"]
     }
