@@ -2,6 +2,7 @@
     "name": "voceconnect/objects-to-objects",
     "description": "A WordPress plugin/module that provides the ability to map relationships between posts and other post types",
     "license": "GPLv2+",
+    "version": "1.0.0",
     "authors": [
         {
             "name": "Michael Pretty",
