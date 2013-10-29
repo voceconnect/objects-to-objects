@@ -15,7 +15,7 @@
         }
     ],
     "require": {
-        "voceconnect/post-selection-ui": "dev-adding_composer"
+        "voceconnect/post-selection-ui": "dev-master"
     },
     "minimum-stability": "stable",
     "autoload": {
