@@ -3,15 +3,15 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "877e68a6bcbd6bde9ef97c6181f1863f",
+    "hash": "d2279faba9c64cfa7fdd94eab0dd2961",
     "packages": [
         {
             "name": "voceconnect/post-selection-ui",
-            "version": "dev-adding_composer",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "git@github.com:voceconnect/post-selection-ui.git",
-                "reference": "cacaee91a23b22838d8d9ae045c7a55449df71fe"
+                "reference": "ea27e058bf5d77b94f411791c64166d70f6f5385"
             },
             "type": "library",
             "autoload": {
@@ -29,7 +29,7 @@
                 }
             ],
             "description": "A WordPress library to display a user interface to easily select posts from any post type",
-            "time": "2013-10-29 15:17:52"
+            "time": "2013-10-29 17:57:11"
         }
     ],
     "packages-dev": [
