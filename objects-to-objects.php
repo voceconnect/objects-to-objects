@@ -4,6 +4,9 @@ require_once (__DIR__ . '/src/factory.php');
 require_once (__DIR__ . '/src/query.php');
 require_once (__DIR__ . '/src/rewrites.php');
 
+if( file_exists( __DIR__ . '/vendor/autoload.php' ) )
+	require_once ( __DIR__ . '/vendor/autoload.php' );
+
 class O2O {
 
 	private static $rewrites_enabled = false;

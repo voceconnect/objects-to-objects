@@ -8,6 +8,15 @@
             "email": "mpretty@voceconnect.com"
         }
     ],
+    "repositories": [
+        {
+            "type": "git",
+            "url": "git@github.com:voceconnect/post-selection-ui.git"
+        }
+    ],
+    "require": {
+        "voceconnect/post-selection-ui": "dev-adding_composer"
+    },
     "minimum-stability": "stable",
     "autoload": {
         "files": ["objects-to-objects.php"]
