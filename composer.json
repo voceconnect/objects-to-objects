@@ -1,7 +1,7 @@
 {
     "name": "voceconnect/objects-to-objects",
     "description": "A WordPress plugin/module that provides the ability to map relationships between posts and other post types",
-    "keywords": ["wordpress", "relationships"]
+    "keywords": ["wordpress", "relationships"],
     "license": "GPLv2+",
     "type": "library",
     "authors": [
