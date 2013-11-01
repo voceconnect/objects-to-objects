@@ -27,14 +27,14 @@ class O2O_Rewrites {
 	 * @throws Exception 
 	 */
 	public static function add_rewrite_rules() {
+		global $wp_rewrite;
+
 		foreach ( O2O_Connection_Factory::Get_Connections() as $connection ) {
 			$args = $connection->get_args();
 			if ( !empty( $args['rewrite'] ) ) {
-
 				$base_direction = $args['rewrite'] == 'to' ? 'to' : 'from';
 				$attached_direction = $base_direction == 'to' ? 'from' : 'to';
-				$connection = $this->get_connection( $connection_name );
-
+				$connection_name = $connection->get_name();
 				foreach ( $connection->$base_direction() as $base_post_type ) {
 
 					//get the connected to post's permastructure
@@ -49,8 +49,8 @@ class O2O_Rewrites {
 					$base_post_type_root = str_replace( $wp_rewrite->rewritecode, $wp_rewrite->rewritereplace, $base_post_type_root );
 
 					//create the connected from post's permastructure
-					if ( count( $connection->$attached_direction ) === 1 ) {
-						$attached_types = $connection->$attached_direction;
+					if ( count( $connection->$attached_direction() ) === 1 ) {
+						$attached_types = $connection->$attached_direction();
 						$connected_post_type = $attached_types[0];
 						if ( $connected_post_type === 'post' ) { //stupid posts, always break the rules
 							$connected_post_type_root = trailingslashit( $wp_rewrite->front );
