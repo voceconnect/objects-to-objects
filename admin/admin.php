@@ -3,7 +3,7 @@
 class O2O_Admin {
 
 	public static function init() {
-		if ( !class_exists( 'Post_Selection_UI' ) ) {
+		if ( !class_exists( 'Post_Selection_UI', false ) ) {
 			@include_once(__DIR__ . '/post-selection-ui/post-selection-ui.php');
 			Post_Selection_UI::init();
 		}

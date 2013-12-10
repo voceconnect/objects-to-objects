@@ -10,16 +10,11 @@
             "email": "mpretty@voceconnect.com"
         }
     ],
-    "repositories": [
-        {
-            "type": "git",
-            "url": "git@github.com:voceconnect/post-selection-ui.git"
-        }
-    ],
     "require": {
         "voceconnect/post-selection-ui": "~1.0"
     },
     "autoload": {
+        "classmap": ["src/", "admin/admin.php"],
         "files": ["objects-to-objects.php"]
     }
 }

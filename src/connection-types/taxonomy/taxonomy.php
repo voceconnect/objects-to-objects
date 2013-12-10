@@ -1,5 +1,7 @@
 <?php
-require_once(__DIR__ . '/query_modifier.php');
+if( ! class_exists( 'O2O_Query_Modifier_Taxonomy', false ) ) {
+	require_once ( __DIR__ . 'query_modifier.php' );
+}
 
 class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection {
 
