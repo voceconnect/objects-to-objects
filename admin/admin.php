@@ -3,10 +3,10 @@
 class O2O_Admin {
 
 	public static function init() {
-		if ( !class_exists( 'Post_Selection_UI', false ) ) {
+		if ( ! class_exists( 'Post_Selection_UI' ) ) {
 			@include_once(__DIR__ . '/post-selection-ui/post-selection-ui.php');
-			Post_Selection_UI::init();
 		}
+		Post_Selection_UI::init();
 		add_action( 'add_meta_boxes', array( __CLASS__, '__action_add_meta_box' ), 10, 2 );
 		add_action( 'save_post', array( __CLASS__, '__action_save_post' ) );
 	}

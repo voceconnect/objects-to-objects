@@ -22,7 +22,7 @@ class O2O {
 		}
 
 		if ( is_admin() ) {
-			if ( ! class_exists( 'O2O_Admin', false ) ) {
+			if ( ! class_exists( 'O2O_Admin' ) ) {
 				require_once( dirname( __DIR__ ) . '/admin/admin.php' );
 			}
 			O2O_Admin::init();

@@ -1,5 +1,5 @@
 <?php
-if( ! class_exists( 'O2O_Query_Modifier_Taxonomy', false ) ) {
+if( ! class_exists( 'O2O_Query_Modifier_Taxonomy' ) ) {
 	require_once ( __DIR__ . '/query_modifier.php' );
 }
 
