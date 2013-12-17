@@ -43,6 +43,8 @@ class O2O_Admin {
 			'limit' => $connection_args[$direction]['limit']
 		);
 
+		$args = apply_filters( "o2o_{$connection_name}_psu_args", $args, $direction );
+
 		echo post_selection_ui( $connection_name . '_' . $direction, $args );
 
 
