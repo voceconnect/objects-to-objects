@@ -274,7 +274,7 @@ class O2O_Query_Modifier {
 			$wp_query->query_vars['post__in'] = array_diff( $connected_ids, $post__not_in );
 			unset( $wp_query->query_vars['post__not_in'] );
 		} else {
-			$wp_query->query_vars['post__in'] = mpty($connected_ids) ? array(0) : $connected_ids;
+			$wp_query->query_vars['post__in'] = empty($connected_ids) ? array(0) : $connected_ids;
 		}
 	}
 }
