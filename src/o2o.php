@@ -65,7 +65,7 @@ class O2O {
 						$post_name = str_replace( '%20', ' ', $post_name );
 						$post_name = array_pop( explode( '/', trim( $post_name, '/' ) ) );
 
-						$post_types = array_map(array($wpdb, 'escape'), (array) $name_post_types);
+						$post_types = array_map( 'esc_sql', (array) $name_post_types);
 						$post_types_in = "('" . implode(', ', $post_types) . "')";
 						$post_id = $wpdb->get_var($wpdb->prepare("SELECT post_id from $wpdb->postmeta PM JOIN $wpdb->posts P ON P.ID = PM.post_id ".
 								"WHERE meta_key = '_wp_old_slug' AND meta_value = %s AND post_type in {$post_types_in} limit 1", $post_name));
