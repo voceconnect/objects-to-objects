@@ -32,7 +32,7 @@ class O2O_Rewrites {
 		foreach ( O2O_Connection_Factory::Get_Connections() as $connection ) {
 			$args = $connection->get_args();
 			if ( !empty( $args['rewrite'] ) ) {
-				$base_direction = $args['rewrite'] == 'to' ? 'to' : 'from';
+				$base_direction = $args['rewrite'] == 'to' ? 'from' : 'to';
 				$attached_direction = $base_direction == 'to' ? 'from' : 'to';
 				$connection_name = $connection->get_name();
 				foreach ( $connection->$base_direction() as $base_post_type ) {
@@ -65,10 +65,10 @@ class O2O_Rewrites {
 					}
 
 					//now add the new rules
-					add_rewrite_rule( $base_post_type_root . $connected_post_type_root . 'feed/(feed|rdf|rss|rss2|atom)/?$', $wp_rewrite->index . '?connection_name=' . $connection_name . '&connected_name=$matches[1]&feed=$matches[2]&connection_dir=' . $base_direction, 'top' );
-					add_rewrite_rule( $base_post_type_root . $connected_post_type_root . '(feed|rdf|rss|rss2|atom)/?$', $wp_rewrite->index . '?connection_name=' . $connection_name . '&connected_name=$matches[1]&feed=$matches[2]&connection_dir=' . $base_direction, 'top' );
-					add_rewrite_rule( $base_post_type_root . $connected_post_type_root . 'page/?([0-9]{1,})/?$', $wp_rewrite->index . '?connection_name=' . $connection_name . '&connected_name=$matches[1]&paged=$matches[2]&connection_dir=' . $base_direction, 'top' );
-					add_rewrite_rule( $base_post_type_root . $connected_post_type_root . '?$', $wp_rewrite->index . '?connection_name=' . $connection_name . '&connected_name=$matches[1]&connection_dir=' . $base_direction, 'top' );
+					add_rewrite_rule( $base_post_type_root . $connected_post_type_root . 'feed/(feed|rdf|rss|rss2|atom)/?$', $wp_rewrite->index . '?connection_name=' . $connection_name . '&connected_name=$matches[1]&feed=$matches[2]&connection_dir=' . $attached_direction, 'top' );
+					add_rewrite_rule( $base_post_type_root . $connected_post_type_root . '(feed|rdf|rss|rss2|atom)/?$', $wp_rewrite->index . '?connection_name=' . $connection_name . '&connected_name=$matches[1]&feed=$matches[2]&connection_dir=' . $attached_direction, 'top' );
+					add_rewrite_rule( $base_post_type_root . $connected_post_type_root . 'page/?([0-9]{1,})/?$', $wp_rewrite->index . '?connection_name=' . $connection_name . '&connected_name=$matches[1]&paged=$matches[2]&connection_dir=' . $attached_direction, 'top' );
+					add_rewrite_rule( $base_post_type_root . $connected_post_type_root . '?$', $wp_rewrite->index . '?connection_name=' . $connection_name . '&connected_name=$matches[1]&connection_dir=' . $attached_direction, 'top' );
 				}
 			}
 		}
