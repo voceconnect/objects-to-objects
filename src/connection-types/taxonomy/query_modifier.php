@@ -28,8 +28,4 @@ class O2O_Query_Modifier_Taxonomy extends O2O_Query_Modifier {
 
 		
 	}
-	
-	public static function posts_results($wp_query, $connection, $o2o_query) {
-		//do nothing
-	}
 }

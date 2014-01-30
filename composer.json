@@ -13,6 +13,9 @@
     "require": {
         "voceconnect/post-selection-ui": "~1.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": "3.7.*"
+    },
     "autoload": {
         "classmap": ["src/", "admin/admin.php"],
         "files": ["objects-to-objects.php"]

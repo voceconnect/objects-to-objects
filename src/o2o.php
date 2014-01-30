@@ -2,30 +2,54 @@
 
 class O2O {
 
-	private static $rewrites_enabled = false;
+	private static $instance;
 
-	public static function Register_Connection( $name, $from_object_types, $to_object_types, $args = array( ) ) {
-		return O2O_Connection_Factory::Register( $name, $from_object_types, $to_object_types, $args );
+	public $connection_factory;
+	public $rewrites_enabled = false;
+
+	protected function __construct( $connection_factory ) {
+		$this->connection_factory = $connection_factory;
 	}
 
-	public static function init() {
+	public static function GetInstance() {
+		if( self::$instance === null ) {
+			$connection_factory = new O2O_Connection_Factory();
+			$query = new O2O_Query( $connection_factory );
+
+			self::$instance = new O2O( $connection_factory, $query );
+		}
+		return self::$instance;
+	}
+
+	public static function Register_Connection( $name, $from_object_types, $to_object_types, $args = array( ) ) {
+		self::GetInstance()->connection_factory->register( $name, $from_object_types, $to_object_types, $args );
+	}
+
+	public static function Enable_Rewrites( $enabled = true ) {
+		self::GetInstance()->rewrites_enabled = $enabled;
+	}
+
+	public function init() {
 		
-		O2O_Query::init();
+		$query = new O2O_Query( $this->connection_factory );
+		$query->init();
 		
 		if ( function_exists( 'wpcom_vip_enable_term_order_functionality' ) ) {
 			//ensure that the ability to sort terms is setup on WordPress.com VIP
 			wpcom_vip_enable_term_order_functionality();
 		}
 		
-		if ( self::$rewrites_enabled ) {
-			O2O_Rewrites::Init();
+		if ( $this->rewrites_enabled ) {
+			$rewrites = new O2O_Rewrites( $this->connection_factory );
+			$rewrites->init();
 		}
 
 		if ( is_admin() ) {
 			if ( ! class_exists( 'O2O_Admin' ) ) {
 				require_once( dirname( __DIR__ ) . '/admin/admin.php' );
 			}
-			O2O_Admin::init();
+			$admin = new O2O_Admin( $this->connection_factory );
+			$admin->init();
 		}
 		
 		//@todo, move this to a better location
@@ -80,8 +104,6 @@ class O2O {
 		}, 10, 2);
 	}
 
-	public static function Enable_Rewrites( $enabled = true ) {
-		self::$rewrites_enabled = $enabled;
-	}
+	
 
 }

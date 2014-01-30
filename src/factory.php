@@ -2,7 +2,11 @@
 
 class O2O_Connection_Factory {
 
-	private static $instances = array( );
+	protected $connections;
+
+	public function __construct() {
+		$this->connections = array();
+	}
 
 	/**
 	 * Registers a new O2O_Connection
@@ -12,9 +16,9 @@ class O2O_Connection_Factory {
 	 * @param array $args
 	 * @return O2O_Connection_Taxonomy 
 	 */
-	public static function Register( $name, $from_object_types, $to_object_types, $args = array( ) ) {
+	public function register( $name, $from_object_types, $to_object_types, $args = array( ) ) {
 
-		if ( !$connection = self::Get_Connection( $name ) ) {
+		if ( !$connection = self::get_connection( $name ) ) {
 
 			$args = wp_parse_args( $args, array(
 				'reciprocal' => false,
@@ -25,13 +29,17 @@ class O2O_Connection_Factory {
 
 			$connection = new O2O_Connection_Taxonomy( $name, $from_object_types, $to_object_types, $args );
 
-			self::$instances[$name] = $connection;
+			$this->connections[$name] = $connection;
 		}
 		return $connection;
 	}
 
-	public static function Get_Connections() {
-		return self::$instances;
+	public function add( $connection ) {
+		$this->connections[$connection->get_name()] = $connection;
+	}
+
+	public function get_connections() {
+		return $this->connections;
 	}
 
 	/**
@@ -39,9 +47,9 @@ class O2O_Connection_Factory {
 	 * @param string $name
 	 * @return iO2O_Connection|boolean 
 	 */
-	public static function Get_Connection( $name ) {
-		if ( isset( self::$instances[$name] ) ) {
-			return self::$instances[$name];
+	public function get_connection( $name ) {
+		if ( isset( $this->connections[$name] ) ) {
+			return $this->connections[$name];
 		}
 		return false;
 	}

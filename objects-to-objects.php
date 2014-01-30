@@ -15,4 +15,4 @@ if( ! class_exists( 'O2O_Rewrites' ) ) {
 	require_once ( __DIR__ . '/src/rewrites.php' );
 }
 
-add_action( 'init', array( 'O2O', 'init' ), 20 );
+add_action( 'init', array( O2O::GetInstance(), 'init' ), 20 );
