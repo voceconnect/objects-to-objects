@@ -3,7 +3,7 @@ Objects to Objects [![Build Status](https://travis-ci.org/voceconnect/objects-to
 
 Contributors: prettyboymp, klangley, csloisel, markparolisi, jeffstieler  
 Tags: relationships, mapping, connections, many-to-many  
-Requires at least: 3.2  
+Requires at least: 3.6  
 Tested up to: 3.8  
 Stable tag: 1.2  
 License: GPLv2 or later  
