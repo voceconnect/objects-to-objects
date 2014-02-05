@@ -10,34 +10,24 @@
  *   'orderby' => 'connection' : allows the connection to be ordered by the user set connection order if the connection type supports it
  */
 class O2O_Query {
-	/*
-	  1)  filter just the ids we need
-	  2)  if order by connection, change the limit to the connection limit (store original limits)
-	  3)  get back results
-	  4)  if order by connection, reorder posts
-	  5)  if order by connection set posts based on limits
-	 */
 
-	public static function init() {
-		add_action( 'parse_query', array( __CLASS__, '_action_parse_query' ) );
-		add_filter( 'posts_clauses', array( __CLASS__, '_filter_posts_clauses' ), 10, 2 );
-		add_filter( 'posts_results', array( __CLASS__, '_filter_posts_results' ), 10, 2 );
-		add_filter( 'found_posts_query', array( __CLASS__, '_filter_found_posts_query' ), 10, 2 );
-		add_filter( 'found_posts', array( __CLASS__, '_filter_found_posts' ), 10, 2 );
+	protected $connection_factory;
+	protected $initialized = false;
+
+	public function __construct( $connection_factory ) {
+		$this->connection_factory = $connection_factory;
 	}
 
-	public static function _filter_found_posts( $found_posts, $wp_query ) {
-		if ( is_o2o_connection( $wp_query ) && isset( $wp_query->o2o_found_posts_ ) ) {
-			$found_posts = $wp_query->o2o_found_posts;
-		}
-		return $found_posts;
+	public function init() {
+		add_action( 'parse_query', array( $this, '_action_parse_query' ) );
+		add_filter( 'posts_clauses', array( $this, '_filter_posts_clauses' ), 10, 2 );
+		add_filter( 'posts_results', array( $this, '_filter_posts_results' ), 10, 2 );
 	}
-
-	public static function _filter_found_posts_query( $query, $wp_query ) {
-		if ( is_o2o_connection( $wp_query ) && isset( $wp_query->o2o_found_posts_ ) ) {
-			$query = '';
-		}
-		return $query;
+	
+	public function deinit() {
+		remove_action( 'parse_query', array( $this, '_action_parse_query' ) );
+		remove_filter( 'posts_clauses', array( $this, '_filter_posts_clauses' ), 10 );
+		remove_filter( 'posts_results', array( $this, '_filter_posts_results' ), 10 );
 	}
 
 	/**
@@ -52,10 +42,10 @@ class O2O_Query {
 	 * @param WP_Query $wp_query
 	 * @return array
 	 */
-	public static function _filter_posts_results( $posts, $wp_query ) {
+	public function _filter_posts_results( $posts, $wp_query ) {
 		if ( is_o2o_connection( $wp_query ) ) {
 
-			$connection = O2O_Connection_Factory::Get_Connection( $wp_query->o2o_connection );
+			$connection = $this->connection_factory->get_connection( $wp_query->o2o_connection );
 			$query_modifier = $connection->get_query_modifier();
 
 			call_user_func_array(array($query_modifier, 'posts_results'), array($posts, $wp_query, $connection, $wp_query->query_vars['o2o_query']));
@@ -69,10 +59,10 @@ class O2O_Query {
 	 * @param WP_Query $wp_query
 	 * @return array
 	 */
-	public static function _filter_posts_clauses( $clauses, $wp_query ) {
+	public function _filter_posts_clauses( $clauses, $wp_query ) {
 		global $wpdb;
 		if ( is_o2o_connection( $wp_query ) ) {
-			$connection = O2O_Connection_Factory::Get_Connection( $wp_query->o2o_connection );
+			$connection = $this->connection_factory->get_connection( $wp_query->o2o_connection );
 			$o2o_query = $wp_query->query_vars['o2o_query'];
 
 			//if we're doing custom order we need to expand the limits to include the complete set since limits can be done until after sorting
@@ -95,13 +85,12 @@ class O2O_Query {
 	 * @todo add check that ID is valid post type
 	 * @todo add handling for returning empty result for invalid/empty connection queries
 	 */
-	public static function _action_parse_query( $wp_query ) {
-
+	public function _action_parse_query( $wp_query ) {
 		self::_transform_query_vars( $wp_query->query_vars );
 
 		if ( isset( $wp_query->query_vars['o2o_query'] ) && is_array( $wp_query->query_vars['o2o_query'] ) && isset( $wp_query->query_vars['o2o_query']['connection'] ) ) {
 			$o2o_query = &$wp_query->query_vars['o2o_query'];
-			if ( $connection = O2O_Connection_Factory::Get_Connection( $o2o_query['connection'] ) ) {
+			if ( $connection = $this->connection_factory->get_connection( $o2o_query['connection'] ) ) {
 				$wp_query->o2o_connection = $o2o_query['connection'];
 
 				$o2o_query = wp_parse_args( $o2o_query, array(
@@ -266,15 +255,19 @@ class O2O_Query_Modifier {
 		//set the post_ids based on the connection
 		$connected_ids = $o2o_query['direction'] == 'to' ? $connection->get_connected_to_objects( $o2o_query['id'] ) : $connection->get_connected_from_objects( $o2o_query['id'] );
 
-		if ( $wp_query->query_vars['post__in'] ) {
-			$post__in = array_map( 'absint', $q['post__in'] );
+		if ( !empty($wp_query->query_vars['post__in'] ) ) {
+			$post__in = array_map( 'absint', $wp_query->query_vars['post__in'] );
 			$wp_query->query_vars['post__in'] = array_intersect( $connected_ids, $post__in );
 		} elseif ( $wp_query->query_vars['post__not_in'] ) {
-			$post__not_in = implode( ',', array_map( 'absint', $q['post__not_in'] ) );
+			$post__not_in = implode( ',', array_map( 'absint', $wp_query->query_vars['post__not_in'] ) );
 			$wp_query->query_vars['post__in'] = array_diff( $connected_ids, $post__not_in );
 			unset( $wp_query->query_vars['post__not_in'] );
 		} else {
 			$wp_query->query_vars['post__in'] = empty($connected_ids) ? array(0) : $connected_ids;
 		}
+	}
+
+	public static function posts_results( $wp_query, $connection, $o2o_query ) {
+		//do nothing
 	}
 }

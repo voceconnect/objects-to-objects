@@ -2,32 +2,38 @@
 
 class O2O_Admin {
 
-	public static function init() {
+	protected $connection_factory;
+
+	public function __construct( $connection_factory ) {
+		$this->connection_factory = $connection_factory;
+	}
+
+	public function init() {
 		if ( ! class_exists( 'Post_Selection_UI' ) ) {
 			@include_once(__DIR__ . '/post-selection-ui/post-selection-ui.php');
 		}
 		Post_Selection_UI::init();
-		add_action( 'add_meta_boxes', array( __CLASS__, '__action_add_meta_box' ), 10, 2 );
-		add_action( 'save_post', array( __CLASS__, '__action_save_post' ) );
+		add_action( 'add_meta_boxes', array( $this, '__action_add_meta_box' ), 10, 2 );
+		add_action( 'save_post', array( $this, '__action_save_post' ) );
 	}
 
-	public static function __action_add_meta_box( $post_type, $post ) {
-		foreach ( O2O_Connection_Factory::Get_Connections() as $connection ) {
+	public function __action_add_meta_box( $post_type, $post ) {
+		foreach ( $this->connection_factory->get_connections() as $connection ) {
 			$connection_args = $connection->get_args();
 			if ( in_array( $post_type, $connection->from() ) ) {
-				add_meta_box( $connection->get_name(), isset( $connection_args['to']['labels']['name'] ) ? $connection_args['to']['labels']['name'] : 'Items', array( __CLASS__, 'meta_box' ), $post_type, $connection_args['metabox']['context'], 'low', array( 'connection' => $connection->get_name(), 'direction' => 'to' ) );
+				add_meta_box( $connection->get_name(), isset( $connection_args['to']['labels']['name'] ) ? $connection_args['to']['labels']['name'] : 'Items', array( $this, 'meta_box' ), $post_type, $connection_args['metabox']['context'], 'low', array( 'connection' => $connection->get_name(), 'direction' => 'to' ) );
 			} elseif ( $connection_args['reciprocal'] && in_array( $post_type, $connection->to() ) ) {
-				add_meta_box( $connection->get_name(), isset( $connection_args['from']['labels']['name'] ) ? $connection_args['from']['labels']['name'] : 'Items', array( __CLASS__, 'meta_box' ), $post_type, $connection_args['metabox']['context'], 'low', array( 'connection' => $connection->get_name(), 'direction' => 'from' ) );
+				add_meta_box( $connection->get_name(), isset( $connection_args['from']['labels']['name'] ) ? $connection_args['from']['labels']['name'] : 'Items', array( $this, 'meta_box' ), $post_type, $connection_args['metabox']['context'], 'low', array( 'connection' => $connection->get_name(), 'direction' => 'from' ) );
 			}
 		}
 	}
 
-	public static function meta_box( $post, $metabox ) {
+	public function meta_box( $post, $metabox ) {
 
 		$connection_name = $metabox['args']['connection'];
 		$direction = $metabox['args']['direction'];
 
-		$connection = O2O_Connection_Factory::Get_Connection( $connection_name );
+		$connection = $this->connection_factory->get_connection( $connection_name );
 
 		$connection_args = $connection->get_args();
 
@@ -51,13 +57,13 @@ class O2O_Admin {
 		wp_nonce_field( 'set_' . $connection->get_name() . '_' . $direction . '_' . $post->ID, $connection->get_name() . '_' . $direction . '_nonce' );
 	}
 
-	public static function __action_save_post( $post_id ) {
+	public function __action_save_post( $post_id ) {
 		if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
 			return $post_id;
 		}
 		$post_type = get_post_type( $post_id );
 
-		foreach ( O2O_Connection_Factory::Get_Connections() as $connection ) {
+		foreach ( $this->connection_factory->get_connections() as $connection ) {
 			$connection_args = $connection->get_args();
 
 			if ( isset( $_POST[$connection->get_name() . '_' . 'to'] ) &&

@@ -1,2 +1,4 @@
 # composer dependencies
 vendor
+.DS_Store
+tests/wp-tests-config.php

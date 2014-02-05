@@ -2,7 +2,11 @@
 
 class O2O_Connection_Factory {
 
-	private static $instances = array( );
+	protected $connections;
+
+	public function __construct() {
+		$this->connections = array();
+	}
 
 	/**
 	 * Registers a new O2O_Connection
@@ -12,9 +16,9 @@ class O2O_Connection_Factory {
 	 * @param array $args
 	 * @return O2O_Connection_Taxonomy 
 	 */
-	public static function Register( $name, $from_object_types, $to_object_types, $args = array( ) ) {
+	public function register( $name, $from_object_types, $to_object_types, $args = array( ) ) {
 
-		if ( !$connection = self::Get_Connection( $name ) ) {
+		if ( !$connection = self::get_connection( $name ) ) {
 
 			$args = wp_parse_args( $args, array(
 				'reciprocal' => false,
@@ -23,25 +27,29 @@ class O2O_Connection_Factory {
 			if ( !class_exists( 'O2O_Connection_Taxonomy' ) )
 				require_once(__DIR__ . '/connection-types/taxonomy/taxonomy.php');
 
-			$connection = new O2O_Connection_Taxonomy( $name, $from_object_types, $to_object_types, $args );
-
-			self::$instances[$name] = $connection;
+			$connection = new O2O_Connection_Taxonomy( $name, (array) $from_object_types, (array) $to_object_types, $args );
+			$connection->init();
+			$this->connections[$name] = $connection;
 		}
 		return $connection;
 	}
 
-	public static function Get_Connections() {
-		return self::$instances;
+	public function add( $connection ) {
+		$this->connections[$connection->get_name()] = $connection;
+	}
+
+	public function get_connections() {
+		return $this->connections;
 	}
 
 	/**
 	 * Returns the connection for the named instance
 	 * @param string $name
-	 * @return iO2O_Connection|boolean 
+	 * @return iO2O_Connection
 	 */
-	public static function Get_Connection( $name ) {
-		if ( isset( self::$instances[$name] ) ) {
-			return self::$instances[$name];
+	public function get_connection( $name ) {
+		if ( isset( $this->connections[$name] ) ) {
+			return $this->connections[$name];
 		}
 		return false;
 	}
@@ -92,7 +100,14 @@ interface iO2O_Connection {
 	 * @param string $direction
 	 * @return boolean 
 	 */
-	public function is_sortable($direction = 'to');
+	public function is_sortable($direction = 'from');
+	
+	/**
+	 * Returns whether the connection is hierarchical for the given direction
+	 * @param string $direction
+	 * @return boolean
+	 */
+	public function is_hierarchical($direction = 'from');
 	
 	/**
 	 * Returns the class name of the query_modifier for this type of connection
@@ -175,6 +190,15 @@ abstract class aO2O_Connection implements iO2O_Connection {
 	 */
 	public function is_sortable( $direction = 'from' ) {
 		return (bool) $this->args[$direction]['sortable'];
+	}
+	
+	/**
+	 * Returns whether the connection is hierarchical for the given direction
+	 * @param string $direction
+	 * @return boolean
+	 */
+	public function is_hierarchical( $direction = 'from' ) {
+		return false;
 	}
 	
 	/**

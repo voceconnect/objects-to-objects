@@ -1,3 +1,0 @@
-[submodule "admin/post-selection-ui"]
-	path = admin/post-selection-ui
-	url = git@github.com:voceconnect/post-selection-ui.git
