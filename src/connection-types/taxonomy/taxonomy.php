@@ -146,7 +146,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 		$terms = wp_cache_get( $object_id, $this->taxonomy . '_relationships_ordered' );
 
 		if ( false === $terms ) {
-			$terms = wp_get_object_terms( $object_id, $this->taxonomy, array( 'orderby' => 'term_order', 'fields' => 'ids' ) );
+			$terms = array_map( 'intval', wp_get_object_terms( $object_id, $this->taxonomy, array( 'orderby' => 'term_order', 'fields' => 'ids' ) ) );
 			wp_cache_set( $object_id, $terms, $this->taxonomy . '_relationships_ordered' );
 		}
 
