@@ -18,7 +18,7 @@ class O2O_Admin {
 	}
 
 	public function __action_add_meta_box( $post_type, $post ) {
-		foreach ( O2O_Connection_Factory::Get_Connections() as $connection ) {
+		foreach ( $this->connection_factory->get_connections() as $connection ) {
 			$connection_args = $connection->get_args();
 			if ( in_array( $post_type, $connection->from() ) ) {
 				add_meta_box( $connection->get_name(), isset( $connection_args['to']['labels']['name'] ) ? $connection_args['to']['labels']['name'] : 'Items', array( $this, 'meta_box' ), $post_type, $connection_args['metabox']['context'], 'low', array( 'connection' => $connection->get_name(), 'direction' => 'to' ) );
@@ -33,7 +33,7 @@ class O2O_Admin {
 		$connection_name = $metabox['args']['connection'];
 		$direction = $metabox['args']['direction'];
 
-		$connection = O2O_Connection_Factory::Get_Connection( $connection_name );
+		$connection = $this->connection_factory->get_connection( $connection_name );
 
 		$connection_args = $connection->get_args();
 
@@ -63,7 +63,7 @@ class O2O_Admin {
 		}
 		$post_type = get_post_type( $post_id );
 
-		foreach ( O2O_Connection_Factory::Get_Connections() as $connection ) {
+		foreach ( $this->connection_factory->get_connections() as $connection ) {
 			$connection_args = $connection->get_args();
 
 			if ( isset( $_POST[$connection->get_name() . '_' . 'to'] ) &&

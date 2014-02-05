@@ -16,6 +16,8 @@ class O2O_Query_Tests extends WP_UnitTestCase {
 		$this->assertTrue( (bool) has_filter( 'parse_query',  array( $o2o_query, '_action_parse_query' ) ) );
 		$this->assertTrue( (bool) has_filter( 'posts_clauses',  array( $o2o_query, '_filter_posts_clauses' ) ) );
 		$this->assertTrue( (bool) has_filter( 'posts_results',  array( $o2o_query, '_filter_posts_results' ) ) );
+		
+		$o2o_query->deinit();
 	}
 
 	public function test_action_parse_query() {

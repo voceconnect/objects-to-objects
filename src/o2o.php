@@ -10,7 +10,19 @@ class O2O {
 	protected function __construct( $connection_factory ) {
 		$this->connection_factory = $connection_factory;
 	}
+	
+	/**
+	 * 
+	 * @return O2O_Connection_Factory
+	 */
+	public function get_connection_factory() {
+		return $this->connection_factory;
+	}
 
+	/**
+	 * 
+	 * @return O2O
+	 */
 	public static function GetInstance() {
 		if( self::$instance === null ) {
 			$connection_factory = new O2O_Connection_Factory();
@@ -52,7 +64,9 @@ class O2O {
 			$admin->init();
 		}
 		
-		//@todo, move this to a better location
+		//@todo, move the below to a better location
+		
+		//allow custom templates based on connection type
 		add_filter( 'archive_template', function($template) {
 				global $wp_query;
 				if ( is_o2o_connection() ) {
@@ -103,7 +117,5 @@ class O2O {
 			}
 		}, 10, 2);
 	}
-
-	
 
 }

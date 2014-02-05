@@ -6,7 +6,7 @@ class O2O_Rewrites_Test extends WP_UnitTestCase {
 
 	public function setup() {
 		global $wp_rewrite;
-
+		
 		//set the permalink structure
 		$wp_rewrite->set_permalink_structure( '/blog/%year%/%monthnum%/%day%/%postname%/' );
 
@@ -63,6 +63,8 @@ class O2O_Rewrites_Test extends WP_UnitTestCase {
 		$rewrites->init();
 		$this->assertTrue( ( bool ) has_filter( 'query_vars', array( $rewrites, 'filter_query_vars' ) ) );
 		$this->assertTrue( ( bool ) has_filter( 'delete_option_rewrite_rules', array( $rewrites, 'add_rewrite_rules' ) ) );
+		
+		$rewrites->deinit();
 	}
 
 	public function test_filter_query_vars() {

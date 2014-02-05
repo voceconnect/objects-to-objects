@@ -23,6 +23,12 @@ class O2O_Query {
 		add_filter( 'posts_clauses', array( $this, '_filter_posts_clauses' ), 10, 2 );
 		add_filter( 'posts_results', array( $this, '_filter_posts_results' ), 10, 2 );
 	}
+	
+	public function deinit() {
+		remove_action( 'parse_query', array( $this, '_action_parse_query' ) );
+		remove_filter( 'posts_clauses', array( $this, '_filter_posts_clauses' ), 10 );
+		remove_filter( 'posts_results', array( $this, '_filter_posts_results' ), 10 );
+	}
 
 	/**
 	 * Filter run on posts to apply paging/reordering to the results.
@@ -80,7 +86,6 @@ class O2O_Query {
 	 * @todo add handling for returning empty result for invalid/empty connection queries
 	 */
 	public function _action_parse_query( $wp_query ) {
-
 		self::_transform_query_vars( $wp_query->query_vars );
 
 		if ( isset( $wp_query->query_vars['o2o_query'] ) && is_array( $wp_query->query_vars['o2o_query'] ) && isset( $wp_query->query_vars['o2o_query']['connection'] ) ) {
@@ -250,11 +255,11 @@ class O2O_Query_Modifier {
 		//set the post_ids based on the connection
 		$connected_ids = $o2o_query['direction'] == 'to' ? $connection->get_connected_to_objects( $o2o_query['id'] ) : $connection->get_connected_from_objects( $o2o_query['id'] );
 
-		if ( $wp_query->query_vars['post__in'] ) {
-			$post__in = array_map( 'absint', $q['post__in'] );
+		if ( !empty($wp_query->query_vars['post__in'] ) ) {
+			$post__in = array_map( 'absint', $wp_query->query_vars['post__in'] );
 			$wp_query->query_vars['post__in'] = array_intersect( $connected_ids, $post__in );
 		} elseif ( $wp_query->query_vars['post__not_in'] ) {
-			$post__not_in = implode( ',', array_map( 'absint', $q['post__not_in'] ) );
+			$post__not_in = implode( ',', array_map( 'absint', $wp_query->query_vars['post__not_in'] ) );
 			$wp_query->query_vars['post__in'] = array_diff( $connected_ids, $post__not_in );
 			unset( $wp_query->query_vars['post__not_in'] );
 		} else {
