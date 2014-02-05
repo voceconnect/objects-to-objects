@@ -1,6 +1,7 @@
 <?php
 
 class O2O_Mock_Connection extends aO2O_Connection {
+
 	public function get_query_modifier() {
 		return 'O2O_Mock_Query_Modifier';
 	}
@@ -11,7 +12,9 @@ class O2O_Mock_Connection extends aO2O_Connection {
 	 * @param array $connected_to_ids
 	 * @param bool $append whether to append to the current connected is or overwrite
 	 */
-	public function set_connected_to( $from_object_id, $connected_ids, $append ) {}
+	public function set_connected_to( $from_object_id, $connected_ids, $append ) {
+		
+	}
 
 	/**
 	 * Returns the IDs which are connected to the given object
@@ -31,4 +34,5 @@ class O2O_Mock_Connection extends aO2O_Connection {
 	public function get_connected_from_objects( $to_object_id ) {
 		return array( 1, 2 );
 	}
+
 }

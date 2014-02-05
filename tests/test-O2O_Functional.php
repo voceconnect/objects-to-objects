@@ -48,7 +48,6 @@ class O2O_Functional_Tests extends WP_UnitTestCase {
 		O2O::Register_Connection( 'flat_to_hier', array( 'flat_post_type' ), array( 'hier_post_type' ), array(
 			'rewrite' => 'from', //from is being listed in the rewrite
 		) );
-
 	}
 
 	public function test_sorted_query() {
@@ -111,19 +110,19 @@ class O2O_Functional_Tests extends WP_UnitTestCase {
 			'post_title' => 'flat post 1',
 			'post_status' => 'publish'
 			) );
-		
+
 		$post2 = wp_insert_post( array(
 			'post_type' => 'flat_post_type',
 			'post_title' => 'flat post 2',
 			'post_status' => 'publish'
 			) );
-		
+
 		$post3 = wp_insert_post( array(
 			'post_type' => 'flat_post_type',
 			'post_title' => 'flat post 3',
 			'post_status' => 'publish'
 			) );
-		
+
 		$post4 = wp_insert_post( array(
 			'post_type' => 'flat_post_type',
 			'post_title' => 'flat post 4',
@@ -156,7 +155,7 @@ class O2O_Functional_Tests extends WP_UnitTestCase {
 			'post_status' => 'publish',
 			'post_parent' => $hier_child_1
 			) );
-		
+
 		$connection_factory = O2O::GetInstance()->get_connection_factory();
 
 		$connection = $connection_factory->get_connection( 'flat_to_hier' );
@@ -177,13 +176,13 @@ class O2O_Functional_Tests extends WP_UnitTestCase {
 			) );
 
 		$post_ids = array_map( 'intval', $query->get_posts() );
-		sort($post_ids);
-		
-		
+		sort( $post_ids );
+
+
 		$expected = array( $post1, $post2, $post3, $post4 );
-		sort($expected);
-		
-		$this->assertEquals($expected, $post_ids);
+		sort( $expected );
+
+		$this->assertEquals( $expected, $post_ids );
 	}
 
 }

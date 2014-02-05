@@ -7,7 +7,7 @@ class O2O_Connection_Factory_Tests extends WP_UnitTestCase {
 		$factory = new O2O_Connection_Factory();
 		$connection = $factory->register( $name, 'post', 'post' );
 
-		$this->assertInstanceOf( 'aO2O_Connection', $connection);
+		$this->assertInstanceOf( 'aO2O_Connection', $connection );
 		$this->assertEquals( $name, $connection->get_name() );
 	}
 
@@ -40,4 +40,5 @@ class O2O_Connection_Factory_Tests extends WP_UnitTestCase {
 
 		$this->assertSame( $connection, $factory->get_connection( $name ) );
 	}
+
 }

@@ -1,9 +1,10 @@
 <?php
 
 class O2O_Mock_Query_Modifier extends O2O_Query_Modifier {
-	private static $calledMethods = array();
 
-	public static function wasCalled($method) {
+	private static $calledMethods = array( );
+
+	public static function wasCalled( $method ) {
 		return in_array( $method, self::$calledMethods );
 	}
 
@@ -14,4 +15,5 @@ class O2O_Mock_Query_Modifier extends O2O_Query_Modifier {
 	public static function parse_query( $wp_query, $connection, $o2o_query ) {
 		self::$calledMethods[] = __FUNCTION__;
 	}
+
 }
