@@ -174,7 +174,7 @@ class O2O_Functional_Tests extends WP_UnitTestCase {
 			'fields' => 'ids',
 			'no_found_rows' => true
 			) );
-var_dump($query->request);
+
 		$post_ids = array_map( 'intval', $query->get_posts() );
 		sort( $post_ids );
 
