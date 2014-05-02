@@ -250,7 +250,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 
 	public function _on_post_updated( $post_id, $post_after, $post_before ) {
 		if($post_after->post_parent !== $post_before->post_parent) {
-			if(!in_array( $post_after->post_type, $this->to_object_types )) {
+			if( in_array( $post_after->post_type, $this->to_object_types )) {
 				$term_id = $this->get_object_termID($post_id);
 				$term = get_term($term_id, $this->taxonomy, ARRAY_A);
 				if($post_after->parent_post) {
