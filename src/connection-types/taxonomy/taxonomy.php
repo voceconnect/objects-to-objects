@@ -259,7 +259,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 					$parent_term_id = 0;
 				}
 				$term['parent'] = $parent_term_id;
-				wp_update_term($term_id, $this->taxonomy, term);
+				wp_update_term($term_id, $this->taxonomy, $term);
 			}
 		}
 	}
