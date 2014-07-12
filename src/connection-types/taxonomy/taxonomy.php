@@ -76,8 +76,8 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 				return ( bool ) $term_id;
 			} );
 
+		$current_term_ids = $this->get_connected_terms( $from_object_id );
 		if ( $append && $this->is_sortable( 'to' ) ) {
-			$current_term_ids = $this->get_connected_terms( $from_object_id );
 			$term_ids = array_unique( array_merge( $current_term_ids, $term_ids ), SORT_NUMERIC );
 			$append = false; //core's append doesn't handle sort
 		}
@@ -85,7 +85,10 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 		$result = wp_set_object_terms( $from_object_id, $term_ids, $this->taxonomy, $append );
 
 		wp_cache_delete( $from_object_id, $this->taxonomy . '_relationships_ordered' );
-		do_action( 'o2o_set_connected_to', $from_object_id, $connected_to_ids, $this->name, $append );
+		if ( has_action( 'o2o_set_connected_to' ) ) {
+			$original_object_ids = array_map( array( $this, 'get_object_termID' ), $current_term_ids );
+			do_action( 'o2o_set_connected_to', $from_object_id, $connected_to_ids, $this->name, $append, $original_object_ids );
+		}
 		return is_wp_error( $result ) ? $result : true;
 	}
 
