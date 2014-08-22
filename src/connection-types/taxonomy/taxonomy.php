@@ -86,7 +86,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 
 		wp_cache_delete( $from_object_id, $this->taxonomy . '_relationships_ordered' );
 		if ( has_action( 'o2o_set_connected_to' ) ) {
-			$original_object_ids = array_map( array( $this, 'get_object_termID' ), $current_term_ids );
+			$original_object_ids = array_map( array( $this, 'get_object_for_term' ), $current_term_ids );
 			do_action( 'o2o_set_connected_to', $from_object_id, $connected_to_ids, $this->name, $append, $original_object_ids );
 		}
 		return is_wp_error( $result ) ? $result : true;
