@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @coversDefaultClass O2O_Query
+ */
 class O2O_Query_Tests extends WP_UnitTestCase {
 
 	protected $connection_factory;
@@ -20,9 +23,28 @@ class O2O_Query_Tests extends WP_UnitTestCase {
 		$o2o_query->deinit();
 	}
 
+	/**
+	 * @covers ::_action_parse_query
+	 */
 	public function test_action_parse_query() {
-		$connection = new O2O_Mock_Connection( 'test', 'post', 'page' );
+		$connection = $this->getMockBuilder('O2O_Connection')
+        	->setMethods(array('parse_query', 'get_name', 'to'))
+        	->getMock();
+
+        $connection->expects($this->any())
+			->method('get_name')
+			->will($this->returnValue('test'));
+
+		$connection->expects($this->any())
+			->method('to')
+			->will($this->returnValue(array('post')));
+
+		$connection->expects($this->any())
+			->method('to')
+			->will($this->returnValue('O2O_Query_Modifier_Taxonomy'));
+
 		$this->connection_factory->add( $connection );
+		
 
 		$query_vars = array(
 			'o2o_query' => array(
@@ -33,16 +55,30 @@ class O2O_Query_Tests extends WP_UnitTestCase {
 		);
 
 		$query = new WP_Query();
+
 		$query->query_vars = $query_vars;
+
+		$connection->expects($this->once())
+			->method('parse_query')
+			->with($this->equalTo($query));
+
 		$o2o_query = new O2O_Query( $this->connection_factory );
+
 		$o2o_query->_action_parse_query( $query );
-		$this->assertTrue( O2O_Mock_Query_Modifier::wasCalled( 'parse_query' ) );
+
 		$this->assertObjectHasAttribute( 'o2o_connection', $query );
 		$this->assertEquals( 'test', $query->o2o_connection );
 	}
 
+	/**
+	 * @covers ::_action_parse_query
+	 */
 	public function test_filter_posts_results() {
-		$connection = new O2O_Mock_Connection( 'test', 'post', 'page' );
+		$connection = $this->getMockBuilder('O2O_Connection_Taxonomy')
+        	->setConstructorArgs(array('test', 'post', 'page'))
+        	->setMethods(array('create_term_for_object'))
+        	->getMock();
+
 		$this->connection_factory->add( $connection );
 
 		$query_vars = array(
@@ -62,6 +98,9 @@ class O2O_Query_Tests extends WP_UnitTestCase {
 		$this->assertTrue( O2O_Mock_Query_Modifier::wasCalled( 'posts_results' ) );
 	}
 
+	/**
+	 * @covers ::_action_parse_query
+	 */
 	public function test_filter_posts_clauses() {
 		global $wpdb;
 		$args = array(

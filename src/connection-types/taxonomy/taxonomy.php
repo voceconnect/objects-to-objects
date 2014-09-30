@@ -170,9 +170,10 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 		if ( !in_array( get_post_type( $object_id ), $this->to_object_types ) ) {
 			return false;
 		}
-		$term_id = intval( get_post_meta( $object_id, 'o2o_term_id_' . $this->taxonomy, true ) );
+		$term_id = get_post_meta( $object_id, 'o2o_term_id', true );
 		$term_exists = false;
 		if ( $term_id ) {
+			$term_id = intval( $term_id );
 			$term_exists = wp_cache_get( 'o2o_term_exists_' . $this->taxonomy . '_' . $term_id );
 			if ( !$term_exists ) {
 				if ( $term_exists = term_exists( $term_id, $this->taxonomy ) ) {
@@ -183,7 +184,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 		if ( !($term_id && $term_exists) && $create ) {
 			$term_id = $this->create_term_for_object( $object_id );
 		}
-		return $term_id;
+		return $term_id ? $term_id : false;
 	}
 
 	/**
