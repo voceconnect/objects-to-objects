@@ -2,3 +2,4 @@
 vendor
 .DS_Store
 tests/wp-tests-config.php
+/nbproject/private/
