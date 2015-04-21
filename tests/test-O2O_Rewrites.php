@@ -6,6 +6,7 @@ class O2O_Rewrites_Test extends WP_UnitTestCase {
 
 	public function setup() {
 		global $wp_rewrite;
+		$wp_rewrite = new WP_Rewrite();
 
 		//set the permalink structure
 		$wp_rewrite->set_permalink_structure( '/blog/%year%/%monthnum%/%day%/%postname%/' );
@@ -81,7 +82,6 @@ class O2O_Rewrites_Test extends WP_UnitTestCase {
 		$args = array(
 			'rewrite' => 'to'
 		);
-
 		$connection_factory = new O2O_Connection_Factory();
 
 		$connection_factory->register( 'flat_to_flat', 'flat_post_type', 'flat_post_type', $args );
@@ -90,6 +90,7 @@ class O2O_Rewrites_Test extends WP_UnitTestCase {
 		$o2o_rewrites = new O2O_Rewrites( $connection_factory );
 
 		$o2o_rewrites->add_rewrite_rules();
+
 		$rules = $wp_rewrite->rewrite_rules();
 
 		$required_rewrites = array(
@@ -245,6 +246,8 @@ class O2O_Rewrites_Test extends WP_UnitTestCase {
 			'(.?.+?)/flat-posts/?$' =>
 			'index.php?connection_name=page_to_flat&connected_name=$matches[1]&connection_dir=to'
 		);
+
+		die(var_export($rules));
 
 		foreach ( $required_rewrites as $regex => $replace ) {
 			$this->assertArrayHasKey( $regex, $rules );
