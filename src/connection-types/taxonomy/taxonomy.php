@@ -8,7 +8,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 
 	private $taxonomy;
 	private $previously_cleaned_term_cache = false;
-	
+
 	public function get_taxonomy() {
 		return $this->taxonomy;
 	}
@@ -25,7 +25,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 		return false;
 	}
 
-	public function __construct( $name, $from_object_types, $to_object_types, $args = array( ) ) {
+	public function __construct( $name, $from_object_types, $to_object_types, $args = array() ) {
 		parent::__construct( $name, $from_object_types, $to_object_types, $args );
 
 		$this->args['from']['sortable'] = false;
@@ -64,7 +64,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 	 * @param array $connected_to_ids
 	 * @param bool $append whether to append to the current connected is or overwrite
 	 */
-	public function set_connected_to( $from_object_id, $connected_to_ids = array( ), $append = false ) {
+	public function set_connected_to( $from_object_id, $connected_to_ids = array(), $append = false ) {
 		global $wpdb;
 
 		if ( !in_array( get_post_type( $from_object_id ), $this->from_object_types ) ) {
@@ -73,8 +73,8 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 
 		$term_ids = array_map( array( $this, 'get_object_termID' ), $connected_to_ids );
 		$term_ids = array_filter( $term_ids, function( $term_id ) {
-				return ( bool ) $term_id;
-			} );
+			return ( bool ) $term_id;
+		} );
 
 		$current_term_ids = $this->get_connected_terms( $from_object_id );
 		if ( $append && $this->is_sortable( 'to' ) ) {
@@ -124,7 +124,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 		if ( $term_id ) {
 			$connected_from_objects = get_objects_in_term( $term_id, $this->taxonomy );
 		} else {
-			$connected_from_objects = array( );
+			$connected_from_objects = array();
 		}
 		return $connected_from_objects;
 	}
@@ -154,7 +154,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 		}
 
 		if ( empty( $terms ) )
-			return array( );
+			return array();
 
 		return $terms;
 	}
@@ -170,7 +170,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 		if ( !in_array( get_post_type( $object_id ), $this->to_object_types ) ) {
 			return false;
 		}
-		$term_id = intval( get_post_meta( $object_id, 'o2o_term_id', true ) );
+		$term_id = intval( get_post_meta( $object_id, 'o2o_term_id_' . $this->taxonomy, true ) );
 		$term_exists = false;
 		if ( $term_id ) {
 			$term_exists = wp_cache_get( 'o2o_term_exists_' . $this->taxonomy . '_' . $term_id );
@@ -211,11 +211,11 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 			if ( is_wp_error( $term ) ) {
 				return $term;
 			}
-			if(isset($args['parent']) && $args['parent'] ) {
+			if ( isset( $args['parent'] ) && $args['parent'] ) {
 				//hack to be sure that hierarchy is correct since WP has a bug in clean_term_cache
 				//preventing more than one term from being added to the hierarchy in a single request
-				if($this->previously_cleaned_term_cache) {
-					delete_option("{$this->taxonomy}_children");
+				if ( $this->previously_cleaned_term_cache ) {
+					delete_option( "{$this->taxonomy}_children" );
 				}
 				$this->previously_cleaned_term_cache = true;
 			}
@@ -224,7 +224,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 
 		wp_cache_set( 'o2o_term_exists_' . $this->taxonomy . '_' . $term_id, true );
 
-		add_post_meta( $object_id, 'o2o_term_id', $term_id, true );
+		add_post_meta( $object_id, 'o2o_term_id_' . $this->taxonomy, $term_id, true );
 		wp_cache_set( 'o2o_object_' . $term_id, $object_id );
 
 		return $term_id;
@@ -235,11 +235,11 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 	 * @param int $term_id The term should be for an o2o term only
 	 * @return int|bool the object_id of the matching term, or false if no object exists 
 	 */
-	protected static function get_object_for_term( $term_id ) {
+	protected function get_object_for_term( $term_id ) {
 		$cache_key = 'o2o_object_' . $term_id;
 
 		if ( !($object_id = wp_cache_get( $cache_key )) ) {
-			$posts = get_posts( array( 'meta_query' => array( array( 'key' => 'o2o_term_id', 'value' => $term_id ) ), 'post_type' => get_post_types(), 'post_status' => 'any' ) );
+			$posts = get_posts( array( 'meta_query' => array( array( 'key' => 'o2o_term_id_' . $this->taxonomy, 'value' => $term_id ) ), 'post_type' => get_post_types(), 'post_status' => 'any' ) );
 			if ( count( $posts ) === 1 ) {
 				$object_id = $posts[0]->ID;
 				wp_cache_set( $cache_key, $object_id );
@@ -252,17 +252,38 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 	}
 
 	public function _on_post_updated( $post_id, $post_after, $post_before ) {
-		if($post_after->post_parent !== $post_before->post_parent) {
-			if( in_array( $post_after->post_type, $this->to_object_types )) {
-				$term_id = $this->get_object_termID($post_id);
-				$term = get_term($term_id, $this->taxonomy, ARRAY_A);
-				if($post_after->parent_post) {
-					$parent_term_id = $this->get_object_termID($post_after->parent_post);
+		if ( $post_after->post_parent !== $post_before->post_parent ) {
+			if ( in_array( $post_after->post_type, $this->to_object_types ) ) {
+				$term_id = $this->get_object_termID( $post_id );
+				$term = get_term( $term_id, $this->taxonomy, ARRAY_A );
+				if ( $post_after->parent_post ) {
+					$parent_term_id = $this->get_object_termID( $post_after->parent_post );
 				} else {
 					$parent_term_id = 0;
 				}
 				$term['parent'] = $parent_term_id;
-				wp_update_term($term_id, $this->taxonomy, $term);
+				wp_update_term( $term_id, $this->taxonomy, $term );
+			}
+		}
+	}
+
+	/**
+	 * Support term splitting of WP 4.2 by remapping the term if it gets split.
+	 * 
+	 * @param int $term_id ID of the formerly shared term
+	 * @param int $new_term_id ID of the new term created for the $term_taxonomy_id.
+	 * @param int $term_taxonomy_id ID for the term_taxonomy row affected by the split.
+	 * @param string $taxonomy Taxonomy for the split term.
+	 */
+	public function _on_split_shared_term( $term_id, $new_term_id, $term_taxonomy_id, $taxonomy ) {
+		if ( $taxonomy === $this->taxonomy ) {
+			$object_id = $this->get_object_for_term( $term_id );
+			if ( $object_id !== false ) {
+				//update the cached pointers
+				update_post_meta( $object_id, 'o2o_term_id_' . $this->taxonomy, $new_term_id );
+				wp_cache_set( 'o2o_object_' . $new_term_id, $object_id );
+				wp_cache_set( 'o2o_term_exists_' . $this->taxonomy . '_' . $new_term_id, true );
+				wp_cache_delete( $object_id, $this->taxonomy . '_relationships_ordered' );
 			}
 		}
 	}
