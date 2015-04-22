@@ -119,8 +119,6 @@ class O2O {
 	}
 
 	public function db_update() {
-		global $wpdb;
-
 		$current_db_version = get_option( 'o2o_db_version' );
 		if ( version_compare( $current_db_version, '1.1', '<' ) ) {
 			//convert all o2o_term_id meta_keys to be taxonomy specific to adjust for term splitting
@@ -129,7 +127,7 @@ class O2O {
 			$taxonomy_map = array();
 			foreach ( $connections as $connection ) {
 				if ( method_exists( $connection, 'get_taxonomy' ) ) {
-					foreach ( $connection->to as $post_type ) {
+					foreach ( $connection->to() as $post_type ) {
 						if ( !isset( $taxonomy_map[$post_type] ) ) {
 							$taxonomy_map[$post_type] = array();
 						}
@@ -155,7 +153,7 @@ class O2O {
 				) );
 
 			foreach ( $wp_query->posts as $post_id ) {
-				$term_id = get_post_meta( $post_id, 'o2o_term_id' );
+				$term_id = get_post_meta( $post_id, 'o2o_term_id', true );
 				$post_type = get_post_type( $post_id );
 				if ( isset( $taxonomy_map[$post_type] ) ) {
 					foreach ( $taxonomy_map[$post_type] as $taxonomy ) {
@@ -169,7 +167,7 @@ class O2O {
 				delete_post_meta( $post_id, 'o2o_term_id' );
 			}
 
-			if ( $wp_query->found_posts > 100 ) {
+			if ( $wp_query->found_posts < 100 ) {
 				update_option( 'o2o_db_version', '1.1' );
 			}
 		}

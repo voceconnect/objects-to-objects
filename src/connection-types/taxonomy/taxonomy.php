@@ -235,7 +235,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 	 * @param int $term_id The term should be for an o2o term only
 	 * @return int|bool the object_id of the matching term, or false if no object exists 
 	 */
-	protected static function get_object_for_term( $term_id ) {
+	protected function get_object_for_term( $term_id ) {
 		$cache_key = 'o2o_object_' . $term_id;
 
 		if ( !($object_id = wp_cache_get( $cache_key )) ) {
