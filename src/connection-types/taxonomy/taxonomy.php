@@ -224,7 +224,14 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 
 		wp_cache_set( 'o2o_term_exists_' . $this->taxonomy . '_' . $term_id, true );
 
-		add_post_meta( $object_id, 'o2o_term_id_' . $this->taxonomy, $term_id, true );
+		// add_post_meta( $object_id, 'o2o_term_id', $term_id, true );
+		// modified by Chris Wilson, 6/29/15
+		// perhaps due to imported content, we have a bunch of mismatched term-ids. This fixes it.
+
+		if (!add_post_meta( $object_id, 'o2o_term_id', $term_id, true)) {
+			update_post_meta ( $object_id, 'o2o_term_id', $term_id );
+		}
+
 		wp_cache_set( 'o2o_object_' . $term_id, $object_id );
 
 		return $term_id;
