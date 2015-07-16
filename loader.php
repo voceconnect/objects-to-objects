@@ -24,6 +24,6 @@ if ( !class_exists( 'Composer\Autoload\ClassLoader' ) ) {
 }
 
 $o2oInstance = O2O::GetInstance();
-if ( !has_action( 'init', [$o2oInstance, 'init' ] ) ) {
+if ( !has_action( 'init', array( $o2oInstance, 'init' ) ) ) {
 	add_action( 'init', array( O2O::GetInstance(), 'init' ), 20 );
 }
