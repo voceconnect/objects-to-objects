@@ -4,6 +4,12 @@
     "keywords": ["wordpress", "relationships"],
     "license": "GPLv2+",
     "type": "library",
+    "repositories": [
+        {
+          "type": "git",
+          "url": "git@github.com:voceconnect/wp-qa-suite.git"
+        }
+    ],
     "authors": [
         {
             "name": "Michael Pretty",
@@ -14,7 +20,7 @@
         "voceconnect/post-selection-ui": "~1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "3.7.*"
+        "voceconnect/wp-qa-suite": "dev-wp-qa-scripts"
     },
     "autoload": {
         "classmap": ["src/", "admin/admin.php"],

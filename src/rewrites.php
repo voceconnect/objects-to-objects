@@ -98,6 +98,7 @@ class O2O_Rewrites {
 					if ( !isset( $connected_post_type_obj->rewrite['pages'] ) || $connected_post_type_obj->rewrite['pages'] === true ) {
 						add_rewrite_rule( $base_post_type_root . $connected_post_type_root . 'page/?([0-9]{1,})/?$', $wp_rewrite->index . '?connection_name=' . $connection_name . '&connected_name=$matches[1]&paged=$matches[2]&connection_dir=' . $attached_direction, 'top' );
 					}
+
 					add_rewrite_rule( $base_post_type_root . $connected_post_type_root . '?$', $wp_rewrite->index . '?connection_name=' . $connection_name . '&connected_name=$matches[1]&connection_dir=' . $attached_direction, 'top' );
 				}
 			}
