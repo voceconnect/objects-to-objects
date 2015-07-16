@@ -4,7 +4,10 @@
  */
 class O2O_Connection_Factory_Tests extends WP_UnitTestCase {
 
-	public function test_registration() {
+	/**
+	 * @covers ::register
+	 */
+	public function test_register_returns_aO2O_Connection() {
 		$name = 'test';
 		$factory = new O2O_Connection_Factory();
 		$connection = $factory->register( $name, 'post', 'post' );
@@ -13,7 +16,11 @@ class O2O_Connection_Factory_Tests extends WP_UnitTestCase {
 		$this->assertEquals( $name, $connection->get_name() );
 	}
 
-	public function test_duplicate_registration() {
+	/**
+	 * @covers ::register
+	 * @depends test_register_returns_aO2O_Connection
+	 */
+	public function test_register_returns_previous_instance() {
 		$name = 'test';
 		$factory = new O2O_Connection_Factory();
 		$originalConnection = $factory->register( $name, 'post', 'post' );
@@ -23,24 +30,65 @@ class O2O_Connection_Factory_Tests extends WP_UnitTestCase {
 		$this->assertSame( $originalConnection, $duplicateConnection );
 	}
 
-	public function test_get_all_connections() {
+
+	/**
+	 * @covers ::get_connections
+	 */
+	public function test_get_connections_returns_array() {
+		$factory = new O2O_Connection_Factory();
+
+		$connections = $factory->get_connections();
+		$this->assertInternalType( 'array', $connections );
+	}
+
+	/**
+	 * @covers ::get_connections
+	 * @depends test_get_connections_returns_array
+	 */
+	public function test_get_connections_returns_registered_connection_by_name() {
 		$name = 'test';
 		$factory = new O2O_Connection_Factory();
 		$connection = $factory->register( $name, 'post', 'post' );
 
 		$connections = $factory->get_connections();
-		$this->assertInternalType( 'array', $connections );
 		$this->assertArrayHasKey( $name, $connections );
 	}
 
-	public function test_get_connection() {
+	/**
+	 * @covers ::get_connection
+	 */
+	public function test_get_connection_returns_valid_connection() {
+		$name = 'test';
+		$factory = new O2O_Connection_Factory();
+		$connection = $factory->register( $name, 'post', 'post' );
+
+		$this->assertSame( $connection, $factory->get_connection( $name ) );
+	}
+
+	/**
+	 * @covers ::get_connection
+	 */
+	public function test_get_connection_returns_false_for_invalid_connection() {
 		$name = 'test';
 		$factory = new O2O_Connection_Factory();
 		$connection = $factory->register( $name, 'post', 'post' );
 
 		$this->assertFalse( $factory->get_connection( 'invalid_name' ) );
+	}
 
-		$this->assertSame( $connection, $factory->get_connection( $name ) );
+	/**
+	 * @covers ::add
+	 */
+	public function test_add_sets_connection_by_name() {
+		$name = 'test';
+		$factory = new O2O_Connection_Factory();
+		$connection = $factory->register( $name, 'post', 'post' );
+
+		$factory->add($connection);
+		$connections = PHPUnit_Framework_Assert::readAttribute($factory, 'connections');
+		$this->assertInternalType( 'array', $connections );
+		$this->assertArrayHasKey( $name, $connections );
+		$this->assertSame( $connections[$name], $connection );
 	}
 
 }

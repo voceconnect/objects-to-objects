@@ -183,7 +183,7 @@ class O2O_Connection_Taxonomy extends aO2O_Connection implements iO2O_Connection
 		if ( !($term_id && $term_exists) && $create ) {
 			$term_id = $this->create_term_for_object( $object_id );
 		}
-		return $term_id;
+		return $term_id ? $term_id : false;
 	}
 
 	/**
