@@ -1,29 +1,34 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
     "hash": "2d132519f60b638b2f78332355b9bcdf",
     "packages": [
         {
             "name": "voceconnect/post-selection-ui",
-            "version": "1.0.9",
+            "version": "1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/voceconnect/post-selection-ui.git",
-                "reference": "862b4e4c250372a19312473a747ed5f50b1b954c"
+                "reference": "a645e1e86acd410cefbee01fc7fff4286659f19f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/voceconnect/post-selection-ui/zipball/862b4e4c250372a19312473a747ed5f50b1b954c",
-                "reference": "862b4e4c250372a19312473a747ed5f50b1b954c",
+                "url": "https://api.github.com/repos/voceconnect/post-selection-ui/zipball/a645e1e86acd410cefbee01fc7fff4286659f19f",
+                "reference": "a645e1e86acd410cefbee01fc7fff4286659f19f",
                 "shasum": ""
             },
             "type": "library",
             "autoload": {
+                "classmap": [
+                    "src/Post_Selection_Box.php",
+                    "src/Post_Selection_UI.php"
+                ],
                 "files": [
-                    "post-selection-ui.php"
+                    "post-selection-ui.php",
+                    "src/functions.php"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -32,27 +37,35 @@
             ],
             "authors": [
                 {
-                    "name": "Mike Pretty",
+                    "name": "Gary Smirny",
+                    "email": "gary@voceconnect.com"
+                },
+                {
+                    "name": "Mat Gargano",
+                    "email": "mat@voceconnect.com"
+                },
+                {
+                    "name": "Michael Pretty",
                     "email": "mpretty@voceconnect.com"
                 }
             ],
             "description": "A WordPress library to display a user interface to easily select posts from any post type",
-            "time": "2014-07-08 16:33:23"
+            "time": "2015-07-22 18:38:14"
         }
     ],
     "packages-dev": [
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "1.5.5",
+            "version": "1.5.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "5d973e59cf58a0c847f298de84374c96b42b17b3"
+                "reference": "6f3e42d311b882b25b4d409d23a289f4d3b803d5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/5d973e59cf58a0c847f298de84374c96b42b17b3",
-                "reference": "5d973e59cf58a0c847f298de84374c96b42b17b3",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/6f3e42d311b882b25b4d409d23a289f4d3b803d5",
+                "reference": "6f3e42d311b882b25b4d409d23a289f4d3b803d5",
                 "shasum": ""
             },
             "require": {
@@ -114,7 +127,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2014-09-25 03:33:46"
+            "time": "2014-12-04 22:32:15"
         },
         {
             "name": "voceconnect/wp-qa-suite",
@@ -153,6 +166,7 @@
         "voceconnect/wp-qa-suite": 20
     },
     "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": [],
     "platform-dev": []
 }
