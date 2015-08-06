@@ -11,7 +11,7 @@ class O2O {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return O2O_Connection_Factory
 	 */
 	public function get_connection_factory() {
@@ -19,7 +19,7 @@ class O2O {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return O2O
 	 */
 	public static function GetInstance() {
@@ -120,13 +120,19 @@ class O2O {
 
 	public function db_update() {
 		$current_db_version = get_option( 'o2o_db_version' );
-		if ( version_compare( $current_db_version, '1.1', '<' ) ) {
+		if ( version_compare( $current_db_version, '1.2', '<' ) ) {
 			//convert all o2o_term_id meta_keys to be taxonomy specific to adjust for term splitting
 			//and fix any previously split terms
 			$connections = $this->get_connection_factory()->get_connections();
 			$taxonomy_map = array();
 			foreach ( $connections as $connection ) {
 				if ( method_exists( $connection, 'get_taxonomy' ) ) {
+					foreach ( $connection->from() as $post_type ) {
+						if ( !isset( $taxonomy_map[$post_type] ) ) {
+							$taxonomy_map[$post_type] = array();
+						}
+						$taxonomy_map[$post_type][] = $connection->get_taxonomy();
+					}
 					foreach ( $connection->to() as $post_type ) {
 						if ( !isset( $taxonomy_map[$post_type] ) ) {
 							$taxonomy_map[$post_type] = array();
@@ -168,7 +174,7 @@ class O2O {
 			}
 
 			if ( $wp_query->found_posts < 100 ) {
-				update_option( 'o2o_db_version', '1.1' );
+				update_option( 'o2o_db_version', '1.2' );
 			}
 		}
 	}
