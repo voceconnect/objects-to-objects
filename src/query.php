@@ -254,7 +254,6 @@ class O2O_Query_Modifier {
 		// Do nothing
 	}
 
-
 	public static function parse_query( $wp_query, $connection, $o2o_query ) {
 		//set the post_ids based on the connection
 		$connected_ids = $o2o_query['direction'] == 'to' ? $connection->get_connected_to_objects( $o2o_query['id'] ) : $connection->get_connected_from_objects( $o2o_query['id'] );
