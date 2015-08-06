@@ -133,6 +133,12 @@ class O2O {
 						}
 						$taxonomy_map[$post_type][] = $connection->get_taxonomy();
 					}
+					foreach ( $connection->to() as $post_type ) {
+						if ( !isset( $taxonomy_map[$post_type] ) ) {
+							$taxonomy_map[$post_type] = array();
+						}
+						$taxonomy_map[$post_type][] = $connection->get_taxonomy();
+					}
 				}
 			}
 
