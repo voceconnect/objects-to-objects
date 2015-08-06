@@ -250,6 +250,11 @@ if ( !function_exists( 'get_post_id_by_name' ) ) {
 
 class O2O_Query_Modifier {
 
+	public static function posts_results( $posts, $wp_query, $connection, $o2o_query ) {
+		// Do nothing
+	}
+
+
 	public static function parse_query( $wp_query, $connection, $o2o_query ) {
 		//set the post_ids based on the connection
 		$connected_ids = $o2o_query['direction'] == 'to' ? $connection->get_connected_to_objects( $o2o_query['id'] ) : $connection->get_connected_from_objects( $o2o_query['id'] );
