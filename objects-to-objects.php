@@ -2,7 +2,7 @@
 
 /*
   Plugin Name: Objects to Objects
-  Version:     1.4.2
+  Version:     1.4.3
   Plugin URI:  http://voceplatforms.com
   Description: A WordPress plugin/module that provides the ability to map relationships between posts and other post types.
   Author:      Voce Platforms
