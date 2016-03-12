@@ -2,6 +2,8 @@
 
 class O2O {
 
+	const DB_VERSION = '1.2';
+	
 	private static $instance;
 	public $connection_factory;
 	public $rewrites_enabled = false;
@@ -115,7 +117,13 @@ class O2O {
 			}
 		}, 10, 2 );
 
-		add_action( 'wp_loaded', array( $this, 'db_update' ) );
+		if( !defined( 'O2O_CLI_UPDATES_ONLY' ) || !O2O_CLI_UPDATES_ONLY ) {
+			add_action( 'wp_loaded', array( $this, 'db_update' ) );
+		}
+
+		if( defined( 'WP_CLI' ) && WP_CLI ) {
+			require_once __DIR__ . '/cli/o2o.php';
+		}
 	}
 
 	public function db_update() {
