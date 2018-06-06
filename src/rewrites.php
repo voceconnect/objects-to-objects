@@ -16,12 +16,12 @@ class O2O_Rewrites {
 	 */
 	public function init() {
 		add_filter( 'query_vars', array( $this, 'filter_query_vars' ) );
-		add_action( 'delete_option_rewrite_rules', array( $this, 'add_rewrite_rules' ), 11 );
+		add_action( 'update_option_rewrite_rules', array( $this, 'add_rewrite_rules' ), 11 );
 	}
 
 	public function deinit() {
 		remove_filter( 'query_vars', array( $this, 'filter_query_vars' ) );
-		remove_action( 'delete_option_rewrite_rules', array( $this, 'add_rewrite_rules' ), 11 );
+		remove_action( 'update_option_rewrite_rules', array( $this, 'add_rewrite_rules' ), 11 );
 	}
 
 	/**
